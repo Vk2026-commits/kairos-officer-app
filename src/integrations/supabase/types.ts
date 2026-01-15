@@ -14,7 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          account_number: string | null
+          account_type: string | null
+          address: string | null
+          alien_registration_number: string | null
+          availability: Json | null
+          background_consent: boolean | null
+          background_date: string | null
+          background_signature: string | null
+          bank_name: string | null
+          citizenship_status: string | null
+          city: string | null
+          country_of_issuance: string | null
+          created_at: string
+          date_of_birth: string | null
+          desired_position: string | null
+          desired_salary: string | null
+          direct_deposit_consent: boolean | null
+          email: string | null
+          emergency_contact_address: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
+          first_name: string
+          foreign_passport_number: string | null
+          full_form_data: Json
+          id: string
+          last_name: string
+          middle_name: string | null
+          phone: string | null
+          policy_acknowledgements: Json | null
+          routing_number: string | null
+          ssn: string | null
+          start_date: string | null
+          state: string | null
+          uniform_pants_size: string | null
+          uniform_shirt_size: string | null
+          uniform_shoe_size: string | null
+          uscis_number: string | null
+          w2_additional_withholding: string | null
+          w2_allowances: string | null
+          w2_filing_status: string | null
+          work_authorization_expiration: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          account_number?: string | null
+          account_type?: string | null
+          address?: string | null
+          alien_registration_number?: string | null
+          availability?: Json | null
+          background_consent?: boolean | null
+          background_date?: string | null
+          background_signature?: string | null
+          bank_name?: string | null
+          citizenship_status?: string | null
+          city?: string | null
+          country_of_issuance?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          desired_position?: string | null
+          desired_salary?: string | null
+          direct_deposit_consent?: boolean | null
+          email?: string | null
+          emergency_contact_address?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name: string
+          foreign_passport_number?: string | null
+          full_form_data: Json
+          id?: string
+          last_name: string
+          middle_name?: string | null
+          phone?: string | null
+          policy_acknowledgements?: Json | null
+          routing_number?: string | null
+          ssn?: string | null
+          start_date?: string | null
+          state?: string | null
+          uniform_pants_size?: string | null
+          uniform_shirt_size?: string | null
+          uniform_shoe_size?: string | null
+          uscis_number?: string | null
+          w2_additional_withholding?: string | null
+          w2_allowances?: string | null
+          w2_filing_status?: string | null
+          work_authorization_expiration?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          account_number?: string | null
+          account_type?: string | null
+          address?: string | null
+          alien_registration_number?: string | null
+          availability?: Json | null
+          background_consent?: boolean | null
+          background_date?: string | null
+          background_signature?: string | null
+          bank_name?: string | null
+          citizenship_status?: string | null
+          city?: string | null
+          country_of_issuance?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          desired_position?: string | null
+          desired_salary?: string | null
+          direct_deposit_consent?: boolean | null
+          email?: string | null
+          emergency_contact_address?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
+          first_name?: string
+          foreign_passport_number?: string | null
+          full_form_data?: Json
+          id?: string
+          last_name?: string
+          middle_name?: string | null
+          phone?: string | null
+          policy_acknowledgements?: Json | null
+          routing_number?: string | null
+          ssn?: string | null
+          start_date?: string | null
+          state?: string | null
+          uniform_pants_size?: string | null
+          uniform_shirt_size?: string | null
+          uniform_shoe_size?: string | null
+          uscis_number?: string | null
+          w2_additional_withholding?: string | null
+          w2_allowances?: string | null
+          w2_filing_status?: string | null
+          work_authorization_expiration?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
