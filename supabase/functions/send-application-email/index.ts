@@ -106,7 +106,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Kairos Security Applications <applications@hiring.kairossecurity.com>",
-        to: ["info@kairossecurity.com"],
+        to: ["info@vektiss.com"],
         subject: `New Application: ${application.firstName} ${application.lastName} - ${application.desiredPosition || 'Security Officer'}`,
         html: emailHtml,
       }),
