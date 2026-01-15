@@ -15,7 +15,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 0 75% 45%;
+    /* Maroon/Burgundy from Kairos logo */
+    --primary: 0 55% 23%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 96%;
@@ -24,7 +25,8 @@
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 0 75% 45%;
+    /* Charcoal accent from logo */
+    --accent: 0 0% 25%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84% 60%;
@@ -32,24 +34,24 @@
 
     --border: 0 0% 88%;
     --input: 0 0% 88%;
-    --ring: 0 75% 45%;
+    --ring: 0 55% 23%;
 
     --radius: 0.25rem;
 
     /* Custom tokens */
     --gradient-hero: linear-gradient(180deg, hsl(0 0% 5%) 0%, hsl(0 0% 12%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(0 75% 45%) 0%, hsl(0 65% 40%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(0 55% 23%) 0%, hsl(0 45% 18%) 100%);
     --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.08);
     --shadow-elevated: 0 8px 30px -8px hsl(0 0% 0% / 0.15);
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 26%;
-    --sidebar-primary: 0 0% 10%;
+    --sidebar-primary: 0 55% 23%;
     --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 91%;
-    --sidebar-ring: 0 75% 45%;
+    --sidebar-ring: 0 55% 23%;
   }
 
   .dark {
@@ -62,7 +64,8 @@
     --popover: 0 0% 8%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 0 75% 50%;
+    /* Maroon/Burgundy from Kairos logo */
+    --primary: 0 55% 30%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 0 0% 15%;
@@ -71,7 +74,8 @@
     --muted: 0 0% 15%;
     --muted-foreground: 0 0% 65%;
 
-    --accent: 0 75% 50%;
+    /* Charcoal accent from logo */
+    --accent: 0 0% 30%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62% 30%;
@@ -79,16 +83,16 @@
 
     --border: 0 0% 20%;
     --input: 0 0% 20%;
-    --ring: 0 75% 50%;
+    --ring: 0 55% 30%;
 
     --sidebar-background: 0 0% 8%;
     --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 75% 50%;
+    --sidebar-primary: 0 55% 30%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 15%;
     --sidebar-accent-foreground: 0 0% 95%;
     --sidebar-border: 0 0% 15%;
-    --sidebar-ring: 0 75% 50%;
+    --sidebar-ring: 0 55% 30%;
   }
 }
 
