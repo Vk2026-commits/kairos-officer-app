@@ -5,7 +5,8 @@ import { z } from "zod";
 import { toast } from "sonner";
 import { 
   User, Phone, CreditCard, Heart, FileText, Package, Lock, 
-  FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2
+  FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2,
+  Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -89,9 +90,51 @@ const applicationSchema = z.object({
   // Section 9: Temporary Employment Acknowledgement
   temporaryEmploymentAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge temporary employment terms"),
   
-  // Background Check & Drug Test Consent
+  // Section 10: Personal Appearance
+  personalAppearanceAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the personal appearance policy"),
+  
+  // Section 11: Attendance & Punctuality
+  attendancePolicyAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the attendance policy"),
+  
+  // Section 12: Disciplinary Action
+  disciplinaryPolicyAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the disciplinary policy"),
+  
+  // Section 13: Drug & Alcohol Use
+  drugAlcoholPolicyAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the drug & alcohol policy"),
+  
+  // Section 14: Drug Test Consent
+  drugTestConsentAcknowledged: z.boolean().refine(val => val === true, "You must consent to drug testing"),
+  
+  // Section 15: Employee Availability
+  availabilityPosition: z.string().optional(),
+  mondayFrom: z.string().optional(),
+  mondayTo: z.string().optional(),
+  tuesdayFrom: z.string().optional(),
+  tuesdayTo: z.string().optional(),
+  wednesdayFrom: z.string().optional(),
+  wednesdayTo: z.string().optional(),
+  thursdayFrom: z.string().optional(),
+  thursdayTo: z.string().optional(),
+  fridayFrom: z.string().optional(),
+  fridayTo: z.string().optional(),
+  saturdayFrom: z.string().optional(),
+  saturdayTo: z.string().optional(),
+  sundayFrom: z.string().optional(),
+  sundayTo: z.string().optional(),
+  availabilityNotes: z.string().optional(),
+  
+  // Section 16: Job Description
+  jobDescriptionAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the job description"),
+  
+  // Section 17: Social Media Policy
+  socialMediaPolicyAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the social media policy"),
+  
+  // Section 18: Workers' Compensation Notice
+  workersCompNoticeAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the workers' compensation notice"),
+  retainCommonLawRights: z.boolean().optional(),
+  
+  // Background Check Consent
   backgroundCheckConsent: z.boolean().refine(val => val === true, "You must consent to background check"),
-  drugTestConsent: z.boolean().refine(val => val === true, "You must consent to drug testing"),
 });
 
 type ApplicationFormData = z.infer<typeof applicationSchema>;
@@ -106,7 +149,18 @@ const steps = [
   { id: 7, title: "Offer Letter", icon: FileCheck, description: "Job Acceptance" },
   { id: 8, title: "TrackTik", icon: Smartphone, description: "App Login" },
   { id: 9, title: "Temp Status", icon: Clock, description: "Employment Terms" },
+  { id: 10, title: "Appearance", icon: Shirt, description: "Personal Appearance" },
+  { id: 11, title: "Attendance", icon: Calendar, description: "Punctuality Policy" },
+  { id: 12, title: "Disciplinary", icon: AlertTriangle, description: "Disciplinary Action" },
+  { id: 13, title: "Drug Policy", icon: Shield, description: "Drug & Alcohol Use" },
+  { id: 14, title: "Drug Test", icon: Pill, description: "Testing Consent" },
+  { id: 15, title: "Availability", icon: CalendarDays, description: "Work Schedule" },
+  { id: 16, title: "Job Description", icon: Briefcase, description: "Role & Duties" },
+  { id: 17, title: "Social Media", icon: Share2, description: "Code of Conduct" },
+  { id: 18, title: "Workers' Comp", icon: Building2, description: "Insurance Notice" },
 ];
+
+const TOTAL_STEPS = 18;
 
 export function ApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -169,8 +223,32 @@ export function ApplicationForm() {
       trackTikUsername: "",
       trackTikPasswordSet: false,
       temporaryEmploymentAcknowledged: false,
+      personalAppearanceAcknowledged: false,
+      attendancePolicyAcknowledged: false,
+      disciplinaryPolicyAcknowledged: false,
+      drugAlcoholPolicyAcknowledged: false,
+      drugTestConsentAcknowledged: false,
+      availabilityPosition: "",
+      mondayFrom: "",
+      mondayTo: "",
+      tuesdayFrom: "",
+      tuesdayTo: "",
+      wednesdayFrom: "",
+      wednesdayTo: "",
+      thursdayFrom: "",
+      thursdayTo: "",
+      fridayFrom: "",
+      fridayTo: "",
+      saturdayFrom: "",
+      saturdayTo: "",
+      sundayFrom: "",
+      sundayTo: "",
+      availabilityNotes: "",
+      jobDescriptionAcknowledged: false,
+      socialMediaPolicyAcknowledged: false,
+      workersCompNoticeAcknowledged: false,
+      retainCommonLawRights: false,
       backgroundCheckConsent: false,
-      drugTestConsent: false,
     },
   });
 
@@ -182,7 +260,7 @@ export function ApplicationForm() {
   };
 
   const nextStep = () => {
-    if (currentStep < 9) setCurrentStep(currentStep + 1);
+    if (currentStep < TOTAL_STEPS) setCurrentStep(currentStep + 1);
   };
 
   const prevStep = () => {
@@ -209,7 +287,7 @@ export function ApplicationForm() {
                   className="flex flex-col items-center group"
                 >
                   <div
-                    className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
                       isActive
                         ? "bg-primary text-primary-foreground shadow-lg scale-110"
                         : isCompleted
@@ -218,19 +296,19 @@ export function ApplicationForm() {
                     }`}
                   >
                     {isCompleted ? (
-                      <CheckCircle2 className="w-5 h-5" />
+                      <CheckCircle2 className="w-4 h-4" />
                     ) : (
-                      <Icon className="w-4 h-4 md:w-5 md:h-5" />
+                      <Icon className="w-3 h-3 md:w-4 md:h-4" />
                     )}
                   </div>
-                  <span className={`mt-2 text-[10px] md:text-xs font-medium text-center max-w-[60px] md:max-w-[80px] leading-tight ${
+                  <span className={`mt-1 text-[8px] md:text-[10px] font-medium text-center max-w-[50px] md:max-w-[60px] leading-tight ${
                     isActive ? "text-primary" : "text-muted-foreground"
                   }`}>
                     {step.title}
                   </span>
                 </button>
                 {index < steps.length - 1 && (
-                  <div className={`w-6 md:w-12 h-0.5 mx-1 md:mx-2 transition-all duration-300 ${
+                  <div className={`w-4 md:w-6 h-0.5 mx-0.5 md:mx-1 transition-all duration-300 ${
                     isCompleted ? "bg-accent" : "bg-muted"
                   }`} />
                 )}
@@ -243,7 +321,7 @@ export function ApplicationForm() {
       {/* Step Indicator */}
       <div className="text-center mb-6">
         <p className="text-sm text-muted-foreground">
-          Step {currentStep} of {steps.length}: <span className="text-foreground font-medium">{steps[currentStep - 1].description}</span>
+          Step {currentStep} of {TOTAL_STEPS}: <span className="text-foreground font-medium">{steps[currentStep - 1].description}</span>
         </p>
       </div>
 
@@ -845,7 +923,7 @@ export function ApplicationForm() {
                 />
               </div>
 
-              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Physician Contact (Optional)</h3>
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Personal Physician (Optional)</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField
                   control={form.control}
@@ -865,7 +943,7 @@ export function ApplicationForm() {
                   name="doctorAddress"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Address</FormLabel>
+                      <FormLabel>Doctor's Address</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
@@ -878,7 +956,7 @@ export function ApplicationForm() {
                   name="doctorPhone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number</FormLabel>
+                      <FormLabel>Doctor's Phone</FormLabel>
                       <FormControl>
                         <Input type="tel" {...field} />
                       </FormControl>
@@ -896,22 +974,22 @@ export function ApplicationForm() {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
                 <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <FileText className="w-5 h-5 text-primary" />
-                  Employee Acknowledgement of Handbook
+                  Employee Handbook Acknowledgement
                 </h2>
               </div>
 
               <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
                 <p>
-                  I acknowledge that I have received and reviewed the employee handbook. I understand and recognize that there may be changes to the information, policies, and benefits in the handbook. I understand that Kairos Security LLC may add new policies to the handbook as well as replace, change, or cancel existing policies. I understand that I will be told about any handbook changes and I understand that handbook changes can only be authorized by Kairos Security LLC management.
+                  I have received a copy of the Kairos Security LLC Employee Handbook. I understand that I am responsible for reading and familiarizing myself with the policies and procedures contained therein.
                 </p>
                 <p>
-                  I understand that I became an employee of Kairos Security LLC voluntarily. I understand and acknowledge that there is no specified length to my employment and that my employment is at will. I understand and acknowledge that "at will" means that I may terminate my employment at any time, with or without cause or advance notice. I also understand and acknowledge that "at will" means that Kairos Security LLC may terminate my employment at any time, with or without cause or advance notice, as long as they do not violate federal or state laws.
+                  I understand that the handbook is intended to provide employees with a general understanding of the personnel policies. Neither the handbook nor any of Kairos Security LLC's policies, procedures or practices is intended to create a contract of employment, or a promise or guarantee of continued employment.
                 </p>
                 <p>
-                  I understand that it is my responsibility to read and comply with all policies included within the employee handbook. I further understand that I should consult my supervisor regarding any questions I may have.
+                  I understand that employment with Kairos Security LLC is "at will" and may be terminated by either the employee or the company at any time for any reason.
                 </p>
-                <p className="text-muted-foreground italic">
-                  You can access the full handbook at: <a href="https://www.myhandbookonline.com/kairossecurity" target="_blank" rel="noopener noreferrer" className="text-primary underline">www.myhandbookonline.com/kairossecurity</a>
+                <p>
+                  I understand that Kairos Security LLC reserves the right to revise the contents of the handbook or any policy at any time and that I will be notified of any changes through company communication channels.
                 </p>
               </div>
 
@@ -928,10 +1006,10 @@ export function ApplicationForm() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="font-semibold">
-                        I acknowledge that I have received and reviewed the employee handbook *
+                        I acknowledge that I have received and read the Employee Handbook *
                       </FormLabel>
                       <FormDescription>
-                        By checking this box, you confirm you understand and agree to comply with all policies.
+                        By checking this box, you confirm that you understand the policies contained in the handbook.
                       </FormDescription>
                     </div>
                     <FormMessage />
@@ -947,31 +1025,29 @@ export function ApplicationForm() {
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
                 <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Package className="w-5 h-5 text-primary" />
-                  Receipt & Return of Company Property
+                  Receipt of Company Property
                 </h2>
               </div>
 
               <div className="bg-muted/50 rounded-lg p-4 mb-6 text-sm">
                 <p>
-                  I acknowledge receipt of the company property listed below. I will maintain the property in good condition and will return it upon termination of employment from Kairos Security LLC, or earlier upon request. I will report any loss or damage immediately. I agree that I will use the property for work-related purposes only.
+                  I acknowledge that I have received the following company property and agree to return all items upon separation from the company.
                 </p>
               </div>
 
-              <h3 className="font-semibold text-foreground mb-4">Property Received (check all that apply):</h3>
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                 <FormField
                   control={form.control}
-                  name="receivedBuildingKey"
+                  name="receivedUniform"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="cursor-pointer">Building Key/Card</FormLabel>
+                      <FormLabel className="cursor-pointer">Uniform</FormLabel>
                     </FormItem>
                   )}
                 />
@@ -979,14 +1055,29 @@ export function ApplicationForm() {
                   control={form.control}
                   name="receivedIdBadge"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="cursor-pointer">Identification Badge</FormLabel>
+                      <FormLabel className="cursor-pointer">ID Badge</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="receivedBuildingKey"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer">Building Key</FormLabel>
                     </FormItem>
                   )}
                 />
@@ -994,14 +1085,14 @@ export function ApplicationForm() {
                   control={form.control}
                   name="receivedMobileDevice"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="cursor-pointer">Mobile Device</FormLabel>
+                      <FormLabel className="cursor-pointer">Mobile Device / Radio</FormLabel>
                     </FormItem>
                   )}
                 />
@@ -1009,7 +1100,7 @@ export function ApplicationForm() {
                   control={form.control}
                   name="receivedParkingPass"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
@@ -1024,29 +1115,14 @@ export function ApplicationForm() {
                   control={form.control}
                   name="receivedLaptop"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                       <FormControl>
                         <Checkbox
                           checked={field.value}
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <FormLabel className="cursor-pointer">Laptop Computer</FormLabel>
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="receivedUniform"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 p-3 rounded-lg border hover:bg-muted/30">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <FormLabel className="cursor-pointer">Uniform/Vest</FormLabel>
+                      <FormLabel className="cursor-pointer">Laptop / Computer</FormLabel>
                     </FormItem>
                   )}
                 />
@@ -1057,10 +1133,10 @@ export function ApplicationForm() {
                 name="propertyNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Notes / Serial Numbers</FormLabel>
+                    <FormLabel>Additional Notes / Other Items</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Enter any serial numbers, model information, or other details..."
+                        placeholder="List any additional items received..."
                         className="min-h-[80px]"
                         {...field} 
                       />
@@ -1080,51 +1156,33 @@ export function ApplicationForm() {
                   <Lock className="w-5 h-5 text-primary" />
                   Confidentiality Agreement
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Kairos Security LLC
-                </p>
-              </div>
-
-              <div className="mb-6">
-                <FormField
-                  control={form.control}
-                  name="position"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Position/Title *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Security Officer" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
               </div>
 
               <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
-                <h4 className="font-semibold">Term</h4>
                 <p>
-                  This Agreement applies to discussions related to the duties of your Position during the period beginning on today's date and ending on the later of 5 years, or the term of service.
+                  As a condition of my employment with Kairos Security LLC, I agree to hold in strictest confidence any trade secrets, confidential or proprietary information, or any other type of data which is a part of Kairos Security LLC's business.
                 </p>
-
-                <h4 className="font-semibold">Acknowledgment</h4>
                 <p>
-                  Individual understands and acknowledges that in his or her Position they will receive confidential information pertaining to the activities, operations and the business of Kairos Security LLC and/or financial and personal information of Kairos Security LLC employees ("Confidential Information"). Individual further acknowledges that disclosure of such Confidential Information may be prejudicial to Kairos Security LLC.
+                  I will not, during or after my employment with Kairos Security LLC, disclose any of the above to any person, firm, corporation, or other entity. I will not make any use whatsoever, directly or indirectly, of any of the aforementioned, except as required in the course of my employment with Kairos Security LLC.
                 </p>
-
-                <h4 className="font-semibold">Confidentiality</h4>
-                <p>Individual agrees to:</p>
-                <ul className="list-disc pl-5 space-y-1">
-                  <li>Not disclose or discuss Confidential Information with others not authorized to receive such;</li>
-                  <li>Use reasonable means to protect and prevent the disclosure of Confidential Information, whether oral or written;</li>
-                  <li>Use the Confidential Information only in connection with Kairos Security LLC business.</li>
-                </ul>
-
-                <h4 className="font-semibold">Remedy</h4>
                 <p>
-                  Upon violation of this Agreement, Kairos Security LLC may in its sole discretion remove such Individual immediately from said Position and prevent such Individual from serving on any other position that involves receipt of Confidential Information.
+                  I understand that violation of this Confidentiality Agreement may result in discipline or termination.
                 </p>
               </div>
+
+              <FormField
+                control={form.control}
+                name="position"
+                render={({ field }) => (
+                  <FormItem className="mb-6">
+                    <FormLabel>Position/Title *</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Security Guard, Supervisor, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <FormField
                 control={form.control}
@@ -1139,7 +1197,7 @@ export function ApplicationForm() {
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel className="font-semibold">
-                        I agree to the Confidentiality Agreement terms *
+                        I agree to the terms of this Confidentiality Agreement *
                       </FormLabel>
                       <FormDescription>
                         By checking this box, you acknowledge and agree to maintain confidentiality.
@@ -1160,31 +1218,19 @@ export function ApplicationForm() {
                   <FileCheck className="w-5 h-5 text-primary" />
                   Offer Letter Acceptance
                 </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Kairos Security LLC - Texas DPS License # C20778
-                </p>
               </div>
 
-              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
-                <p>
-                  I am delighted to confirm the offer of employment. Your position will be <strong>Security Officer</strong> reporting to the Supervisor in Private Security.
+              <div className="bg-accent/10 border border-accent/20 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold mb-3">Job Offer Details</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Welcome to Kairos Security LLC! We are pleased to offer you a position with our company.
                 </p>
-
-                <p>
-                  You will receive compensation paid hourly, weekly provided you have rendered services during the pay period, subject to any deductions permitted under law.
-                </p>
-
-                <p>
-                  As a regular part-time employee of Kairos Security LLC, you will be expected to attend work during scheduled hours.
-                </p>
-
-                <p>
-                  <strong>Important:</strong> This offer of employment is contingent upon the completion of a background check, passing a drug test, and any license requirements by DPS.
-                </p>
-
-                <p className="text-muted-foreground italic">
-                  Kairos Security LLC is an at-will employer. This means that both you and Kairos Security reserve the right to terminate the employment relationship at any time for any reason.
-                </p>
+                <ul className="text-sm space-y-2">
+                  <li><strong>Company:</strong> Kairos Security LLC</li>
+                  <li><strong>License:</strong> Texas DPS License #C20778</li>
+                  <li><strong>Employment Type:</strong> Part-time / As needed basis</li>
+                  <li><strong>Pay Frequency:</strong> Bi-weekly (every two weeks)</li>
+                </ul>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -1364,7 +1410,7 @@ export function ApplicationForm() {
                 control={form.control}
                 name="temporaryEmploymentAcknowledged"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5 mb-6">
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -1383,58 +1429,672 @@ export function ApplicationForm() {
                   </FormItem>
                 )}
               />
+            </div>
+          )}
 
-              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Background Check & Drug Test Consent</h3>
-              
-              <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="backgroundCheckConsent"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="font-semibold">
-                          I consent to a background check *
-                        </FormLabel>
-                        <FormDescription>
-                          I authorize Kairos Security LLC to conduct a criminal background check.
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="drugTestConsent"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
-                      <FormControl>
-                        <Checkbox
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                        />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="font-semibold">
-                          I consent to drug testing *
-                        </FormLabel>
-                        <FormDescription>
-                          I agree to submit to drug and/or alcohol testing as required.
-                        </FormDescription>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+          {/* Step 10: Personal Appearance */}
+          {currentStep === 10 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Shirt className="w-5 h-5 text-primary" />
+                  Personal Appearance Policy
+                </h2>
               </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  The purpose of Kairos Security LLC's personal appearance policy is to ensure a safe and sanitary workplace for all employees. Kairos Security LLC strives to maintain a professional working environment that promotes efficiency, positive employee morale and promotes a professional image.
+                </p>
+                <p>
+                  During business hours or when representing Kairos Security LLC, employees are expected to use common sense and good judgment to meet the goals of this policy.
+                </p>
+                <h4 className="font-semibold">General Guidelines:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Wear appropriate clothing according to the Kairos Security LLC uniform check list</li>
+                  <li>Observe high standards of personal hygiene</li>
+                  <li>Dress and groom according to the requirements of your position</li>
+                  <li>Maintain a clean and neat appearance</li>
+                  <li>Refrain from wearing stained, wrinkled, frayed, or revealing clothing to the workplace</li>
+                </ul>
+                <p>
+                  If management designates "casual days," an employee's casual dress must still be clean, neat and project a professional image.
+                </p>
+                <p>
+                  Employees who wear inappropriate attire to work may be sent home to change their clothing.
+                </p>
+                <p className="text-muted-foreground italic">
+                  Kairos Security LLC will make every effort to provide reasonable accommodation for religious, disability, or other characteristics protected under federal, state or local law.
+                </p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="personalAppearanceAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and agree to the Personal Appearance Policy *
+                      </FormLabel>
+                      <FormDescription>
+                        I will maintain professional appearance standards as outlined above.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 11: Attendance & Punctuality */}
+          {currentStep === 11 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-primary" />
+                  Attendance and Punctuality Policy
+                </h2>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  Absenteeism and tardiness place an undue burden on other employees and on the Kairos Security LLC. Kairos Security LLC expects regular attendance and punctuality from all employees.
+                </p>
+                <h4 className="font-semibold">Expectations:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Be in the workplace, ready to work, at your scheduled start time each day</li>
+                  <li>Complete your entire shift</li>
+                  <li>Return from scheduled meal and break periods on time</li>
+                </ul>
+                <h4 className="font-semibold">Time Off Requests:</h4>
+                <p>
+                  All time off must be requested in writing, in advance, as outlined in the time-off policy.
+                </p>
+                <h4 className="font-semibold">Reporting Absences:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>If unexpectedly unable to report for work, directly notify your supervisor as early as possible</li>
+                  <li>It is NOT acceptable to leave a voicemail, text, or email message except in extreme emergencies</li>
+                  <li>If you must leave a message, a follow-up call must be made later that day</li>
+                  <li>For absences of more than one day, contact your supervisor on each day of absence</li>
+                </ul>
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-4">
+                  <strong>Important:</strong> If an employee fails to notify their supervisor after three consecutive days of absence, Kairos Security LLC will presume that the employee has voluntarily resigned.
+                </div>
+                <p className="text-muted-foreground italic">
+                  Should undue or recurrent absence and tardiness become apparent, the employee will be subject to disciplinary action, up to and including termination of employment.
+                </p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="attendancePolicyAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and agree to the Attendance and Punctuality Policy *
+                      </FormLabel>
+                      <FormDescription>
+                        I understand the attendance expectations and consequences.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 12: Disciplinary Action */}
+          {currentStep === 12 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5 text-primary" />
+                  Disciplinary Action Policy
+                </h2>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  Disciplinary action at Kairos Security LLC is intended to fairly and impartially correct behavior and performance problems early on and to prevent reoccurrence.
+                </p>
+                <h4 className="font-semibold">Disciplinary Action May Include:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Verbal warning</li>
+                  <li>Written warning</li>
+                  <li>Suspension with or without pay</li>
+                  <li>Termination of employment</li>
+                </ul>
+                <p>
+                  The severity depends on the problem and the frequency of occurrence. Kairos Security LLC reserves the right to administer disciplinary action at its discretion and based upon the circumstances.
+                </p>
+                <h4 className="font-semibold">Immediate Termination Violations:</h4>
+                <p className="text-destructive">
+                  Certain types of employee behavior are serious enough to justify termination of employment without observing other disciplinary action first:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Workplace violence</li>
+                  <li>Harassment</li>
+                  <li>Theft of any kind</li>
+                  <li>Vandalism or destruction of company property</li>
+                  <li>Use of company equipment and/or company vehicles without prior authorization</li>
+                  <li>Divulging Kairos Security LLC business practices or any other confidential information</li>
+                </ul>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="disciplinaryPolicyAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and understand the Disciplinary Action Policy *
+                      </FormLabel>
+                      <FormDescription>
+                        I understand the consequences of policy violations.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 13: Drug & Alcohol Use */}
+          {currentStep === 13 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-primary" />
+                  Drug & Alcohol Use Policy
+                </h2>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  Kairos Security LLC is committed to maintaining a workplace free of substance abuse.
+                </p>
+                <h4 className="font-semibold">Prohibited Activities:</h4>
+                <p>
+                  No employee is allowed to consume, possess, sell, purchase, or be under the influence of alcohol or illegal drugs:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>On any property owned by or leased on behalf of Kairos Security LLC</li>
+                  <li>In any vehicle owned or leased on behalf of Kairos Security LLC</li>
+                </ul>
+                <h4 className="font-semibold">Prescription & Over-the-Counter Drugs:</h4>
+                <p>
+                  The use of over-the-counter drugs and legally prescribed drugs is permitted if used in the manner prescribed and does not hinder job performance or safety. Employees should inform their supervisor if medication may impair job performance.
+                </p>
+                <h4 className="font-semibold">Reporting Requirements:</h4>
+                <p>
+                  All employees should report evidence of alcohol or drug abuse to their supervisor or administrator immediately. If use creates an imminent threat to safety, employees are required to report the violation.
+                </p>
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-4">
+                  <strong>Drug Testing:</strong> If Kairos Security LLC selects a random drug testing, the employee has within 24 hours to report. Kairos Security LLC reserves the right to examine and test for drugs and alcohol at its discretion.
+                </div>
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-3 mt-4">
+                  <h4 className="font-semibold mb-2">Drug Test Location:</h4>
+                  <p>National Screening Center</p>
+                  <p>401 Fannin St. | Houston, TX 77002</p>
+                  <p>(713) 226-7847</p>
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="drugAlcoholPolicyAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and agree to the Drug & Alcohol Use Policy *
+                      </FormLabel>
+                      <FormDescription>
+                        I will comply with this policy as a condition of my employment.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 14: Drug Test Consent */}
+          {currentStep === 14 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Pill className="w-5 h-5 text-primary" />
+                  Drug and/or Alcohol Testing Consent Form
+                </h2>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <h4 className="font-semibold">Employee Agreement and Consent to Drug and/or Alcohol Testing</h4>
+                <p>
+                  I hereby agree, upon a request made under the drug/alcohol testing policy of Kairos Security LLC, to submit to a drug or alcohol test and to furnish a sample of my urine, breath, and/or blood for analysis.
+                </p>
+                <p>
+                  I understand and agree that if I at any time refuse to submit to a drug or alcohol test under company policy, or if I otherwise fail to cooperate with the testing procedures, I will be subject to immediate termination.
+                </p>
+                <p>
+                  I further authorize and give full permission to have the Company and/or its company physician send the specimen(s) collected to a laboratory for screening and for the laboratory to release documentation to the Company and/or any governmental entity involved in a legal proceeding.
+                </p>
+                <p>
+                  I understand that only duly-authorized Company officers, employees, and agents will have access to information furnished or obtained in connection with the test; they will maintain and protect confidentiality to the greatest extent possible.
+                </p>
+                <p>
+                  I will hold harmless the Company, its company physician, and any testing laboratory for any alleged harm resulting from such testing, including loss of employment or adverse job action.
+                </p>
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-3 mt-4">
+                  <strong>Important Notice:</strong> The Company will require a drug screen and/or alcohol test whenever you are involved in an on-the-job accident or injury under circumstances that suggest possible involvement or influence of drugs or alcohol.
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="drugTestConsentAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I consent to Drug and/or Alcohol Testing *
+                      </FormLabel>
+                      <FormDescription>
+                        This policy has been explained to me and I agree to submit to testing.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 15: Employee Availability */}
+          {currentStep === 15 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <CalendarDays className="w-5 h-5 text-primary" />
+                  Employee Availability Form
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Texas DPS License #C20778
+                </p>
+              </div>
+
+              <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-6 text-sm">
+                <p>
+                  Show the times and days you are available for work. Whenever your schedule changes, request this form, complete it and return it to your manager or supervisor.
+                </p>
+                <p className="mt-2 font-semibold">
+                  Any changes must be presented to a manager or supervisor 10 days in advance.
+                </p>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="availabilityPosition"
+                render={({ field }) => (
+                  <FormItem className="mb-6">
+                    <FormLabel>Position</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Security Guard, Supervisor, etc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">I am available to work the following days and times:</h3>
+              
+              <div className="space-y-3">
+                {[
+                  { day: "Monday", fromField: "mondayFrom" as const, toField: "mondayTo" as const },
+                  { day: "Tuesday", fromField: "tuesdayFrom" as const, toField: "tuesdayTo" as const },
+                  { day: "Wednesday", fromField: "wednesdayFrom" as const, toField: "wednesdayTo" as const },
+                  { day: "Thursday", fromField: "thursdayFrom" as const, toField: "thursdayTo" as const },
+                  { day: "Friday", fromField: "fridayFrom" as const, toField: "fridayTo" as const },
+                  { day: "Saturday", fromField: "saturdayFrom" as const, toField: "saturdayTo" as const },
+                  { day: "Sunday", fromField: "sundayFrom" as const, toField: "sundayTo" as const },
+                ].map(({ day, fromField, toField }) => (
+                  <div key={day} className="grid grid-cols-3 gap-4 items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium">{day}</span>
+                    <FormField
+                      control={form.control}
+                      name={fromField}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" placeholder="From" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={toField}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" placeholder="To" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="availabilityNotes"
+                render={({ field }) => (
+                  <FormItem className="mt-6">
+                    <FormLabel>Notes/Explanations</FormLabel>
+                    <FormDescription>
+                      Ex: School Mon-Fri 7:00am-3:00pm
+                    </FormDescription>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Any scheduling notes or conflicts..."
+                        className="min-h-[80px]"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 16: Job Description */}
+          {currentStep === 16 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Briefcase className="w-5 h-5 text-primary" />
+                  Security Guard Job Description
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Texas DPS License #C20778
+                </p>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <div className="grid grid-cols-2 gap-4 text-sm mb-4">
+                  <div><strong>Department:</strong> Security</div>
+                  <div><strong>Reports To:</strong> S. Taylor</div>
+                </div>
+
+                <h4 className="font-semibold">Job Summary:</h4>
+                <p>
+                  Guards, patrols, and monitors premises to prevent theft, violence, and rule infractions.
+                </p>
+
+                <h4 className="font-semibold">General Accountabilities:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Monitors and authorizes entrance and departure of employees, visitors, and other persons to guard against theft and maintain security of premises</li>
+                  <li>Writes reports of daily activities and irregularities, such as equipment or property damage, theft, presence of unauthorized persons, or unusual occurrences</li>
+                  <li>Calls police or fire departments in cases of emergency</li>
+                  <li>Answers alarms and investigates disturbances</li>
+                  <li>Circulates among visitors, patrons, or employees to preserve order and protect property</li>
+                  <li>Patrols premises to prevent and detect signs of intrusion</li>
+                  <li>Escorts or drives motor vehicle to transport individuals to specified locations or provide personal protection</li>
+                  <li>Operates detecting devices to screen individuals and prevent passage of prohibited articles</li>
+                  <li>Warns persons of rule infractions or violations, and apprehends or evicts violators from premises</li>
+                </ul>
+                <p className="text-muted-foreground italic">
+                  *The company reserves the right to add or change duties at any time.
+                </p>
+
+                <h4 className="font-semibold">Job Qualifications:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><strong>Education:</strong> High school diploma or equivalent</li>
+                  <li><strong>Experience:</strong> 1-2 years of related experience</li>
+                  <li><strong>Licenses:</strong> Security guard license from state</li>
+                </ul>
+
+                <h4 className="font-semibold">Skills Required:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>Excellent verbal and written communication</li>
+                  <li>Active listening</li>
+                  <li>Critical thinking</li>
+                </ul>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="jobDescriptionAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and understand the Job Description *
+                      </FormLabel>
+                      <FormDescription>
+                        I understand the duties and responsibilities of this position.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 17: Social Media Policy */}
+          {currentStep === 17 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Share2 className="w-5 h-5 text-primary" />
+                  Social and Digital Media Code of Conduct
+                </h2>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  Social media includes electronic communications and online activities, such as text messages, email, wikis, social networking like Facebook, Twitter, and posting comments on blogs.
+                </p>
+
+                <h4 className="font-semibold">Guidelines:</h4>
+                <ol className="list-decimal pl-5 space-y-2">
+                  <li><strong>All internet postings are permanent</strong> - able to be duplicated and may go viral.</li>
+                  <li><strong>Use common sense.</strong> If you wonder whether or not to communicate or post, don't do it until you consult with Kairos Security leadership.</li>
+                  <li><strong>Confidentiality:</strong> You are prohibited from using social media channels to discuss confidential items, legal matters, litigation, or the organization's financial performance.</li>
+                  <li><strong>Be open and honest</strong> about who you are when you communicate.</li>
+                  <li><strong>Respect privacy</strong> - yours, your coworkers', and the organization's - by not providing personal or confidential information without permission.</li>
+                  <li>Only <strong>officially designated persons</strong> may use social media to speak on behalf of the organization in an official capacity.</li>
+                  <li>If communicating with youth, act as you would in person. <strong>Do not initiate one-on-one relationships with minors.</strong></li>
+                  <li><strong>Do not violate copyright</strong> and fair use laws. Do not plagiarize.</li>
+                  <li><strong>Do not use</strong> Kairos Security's email or social media channels for personal use.</li>
+                  <li><strong>Harassment, threats, intimidation, ethnic slurs, personal insults, pornography, obscenity, or abuse</strong> is prohibited via social media channels.</li>
+                  <li>Violations may result in <strong>disciplinary action, up to and including termination</strong>.</li>
+                </ol>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="socialMediaPolicyAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge and agree to the Social and Digital Media Code of Conduct *
+                      </FormLabel>
+                      <FormDescription>
+                        I will comply with this code of conduct in all my communications.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 18: Workers' Compensation Notice */}
+          {currentStep === 18 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  Texas Department of Insurance - Workers' Compensation Notice
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Division of Workers' Compensation - Reference Rule 110.101
+                </p>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  In accordance with Texas Labor Code and Rule 110.101, employers must notify employees of workers' compensation insurance coverage status in writing.
+                </p>
+
+                <div className="bg-accent/10 border border-accent/20 rounded-lg p-4">
+                  <h4 className="font-semibold mb-2">NOTICE TO NEW EMPLOYEES</h4>
+                  <p>
+                    "You may elect to retain your common law right of action if, no later than five days after you begin employment or within five days after receiving written notice from the employer that the employer has obtained workers' compensation insurance coverage, you notify your employer in writing that you wish to retain your common law right to recover damages for personal injury.
+                  </p>
+                  <p className="mt-2">
+                    If you elect to retain your common law right of action, you cannot obtain workers' compensation income or medical benefits if you are injured."
+                  </p>
+                </div>
+
+                <h4 className="font-semibold">When This Notice is Provided:</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>At the time an employee is hired (when completing W-4 and I-9 forms)</li>
+                  <li>When a break in service has occurred</li>
+                  <li>Within 15 days after termination or cancellation of coverage takes effect</li>
+                  <li>Within 15 days after the employer obtains workers' compensation insurance coverage</li>
+                </ul>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="workersCompNoticeAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5 mb-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge receipt of the Workers' Compensation Notice *
+                      </FormLabel>
+                      <FormDescription>
+                        I have read and understand the information above.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="retainCommonLawRights"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30 mb-6">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I elect to RETAIN my common law right of action (Optional)
+                      </FormLabel>
+                      <FormDescription>
+                        Check this box only if you wish to retain your common law right to recover damages. This means you will NOT be covered by workers' compensation benefits.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Final Consent</h3>
+              
+              <FormField
+                control={form.control}
+                name="backgroundCheckConsent"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I consent to a background check *
+                      </FormLabel>
+                      <FormDescription>
+                        I authorize Kairos Security LLC to conduct a criminal background check.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
           )}
 
@@ -1451,7 +2111,7 @@ export function ApplicationForm() {
               Previous
             </Button>
             
-            {currentStep < 9 ? (
+            {currentStep < TOTAL_STEPS ? (
               <Button
                 type="button"
                 onClick={nextStep}
