@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { 
   User, Phone, CreditCard, Heart, FileText, Package, Lock, 
   FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2,
-  Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2
+  Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2,
+  ClipboardList, CalendarClock, Receipt
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -133,6 +134,55 @@ const applicationSchema = z.object({
   workersCompNoticeAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the workers' compensation notice"),
   retainCommonLawRights: z.boolean().optional(),
   
+  // Section 19: Uniform Checklist
+  uniformLongSleeveShirt: z.boolean().optional(),
+  uniformShortSleeveButtonUp: z.boolean().optional(),
+  uniformShortSleeveShirt: z.boolean().optional(),
+  uniformHighVisLongSleeve: z.boolean().optional(),
+  uniformHighVisShortSleeve: z.boolean().optional(),
+  uniformTie: z.boolean().optional(),
+  uniformSilverBadge: z.boolean().optional(),
+  uniformSilverSOs: z.boolean().optional(),
+  uniformPants: z.boolean().optional(),
+  uniformBomberJacket: z.boolean().optional(),
+  uniformJacket: z.boolean().optional(),
+  uniformBeanieHat: z.boolean().optional(),
+  uniformBaseballHat: z.boolean().optional(),
+  uniformFlashlight: z.boolean().optional(),
+  uniformFlagPatch: z.boolean().optional(),
+  uniformRadio: z.boolean().optional(),
+  uniformIdBadge: z.boolean().optional(),
+  uniformChecklistAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge the uniform checklist"),
+  
+  // Section 20: Work Schedule
+  schedulePostAddress: z.string().optional(),
+  schedulePostCity: z.string().optional(),
+  schedulePostState: z.string().optional(),
+  schedulePostZip: z.string().optional(),
+  scheduleMondayFrom: z.string().optional(),
+  scheduleMondayTo: z.string().optional(),
+  scheduleTuesdayFrom: z.string().optional(),
+  scheduleTuesdayTo: z.string().optional(),
+  scheduleWednesdayFrom: z.string().optional(),
+  scheduleWednesdayTo: z.string().optional(),
+  scheduleThursdayFrom: z.string().optional(),
+  scheduleThursdayTo: z.string().optional(),
+  scheduleFridayFrom: z.string().optional(),
+  scheduleFridayTo: z.string().optional(),
+  scheduleSaturdayFrom: z.string().optional(),
+  scheduleSaturdayTo: z.string().optional(),
+  scheduleSundayFrom: z.string().optional(),
+  scheduleSundayTo: z.string().optional(),
+  scheduleStartDate: z.string().optional(),
+  scheduleAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge your work schedule"),
+  
+  // Section 21: W-2 Information
+  w2MaritalStatus: z.enum(["single", "married", "married_withhold_single"]).optional(),
+  w2Allowances: z.string().optional(),
+  w2AdditionalWithholding: z.string().optional(),
+  w2Exempt: z.boolean().optional(),
+  w2Acknowledged: z.boolean().refine(val => val === true, "You must acknowledge the W-2 information"),
+  
   // Background Check Consent
   backgroundCheckConsent: z.boolean().refine(val => val === true, "You must consent to background check"),
 });
@@ -158,9 +208,12 @@ const steps = [
   { id: 16, title: "Job Description", icon: Briefcase, description: "Role & Duties" },
   { id: 17, title: "Social Media", icon: Share2, description: "Code of Conduct" },
   { id: 18, title: "Workers' Comp", icon: Building2, description: "Insurance Notice" },
+  { id: 19, title: "Uniform", icon: ClipboardList, description: "Uniform Checklist" },
+  { id: 20, title: "Schedule", icon: CalendarClock, description: "Work Schedule" },
+  { id: 21, title: "W-2 Info", icon: Receipt, description: "Tax Information" },
 ];
 
-const TOTAL_STEPS = 18;
+const TOTAL_STEPS = 21;
 
 export function ApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
@@ -248,6 +301,49 @@ export function ApplicationForm() {
       socialMediaPolicyAcknowledged: false,
       workersCompNoticeAcknowledged: false,
       retainCommonLawRights: false,
+      uniformLongSleeveShirt: false,
+      uniformShortSleeveButtonUp: false,
+      uniformShortSleeveShirt: false,
+      uniformHighVisLongSleeve: false,
+      uniformHighVisShortSleeve: false,
+      uniformTie: false,
+      uniformSilverBadge: false,
+      uniformSilverSOs: false,
+      uniformPants: false,
+      uniformBomberJacket: false,
+      uniformJacket: false,
+      uniformBeanieHat: false,
+      uniformBaseballHat: false,
+      uniformFlashlight: false,
+      uniformFlagPatch: false,
+      uniformRadio: false,
+      uniformIdBadge: false,
+      uniformChecklistAcknowledged: false,
+      schedulePostAddress: "",
+      schedulePostCity: "",
+      schedulePostState: "",
+      schedulePostZip: "",
+      scheduleMondayFrom: "",
+      scheduleMondayTo: "",
+      scheduleTuesdayFrom: "",
+      scheduleTuesdayTo: "",
+      scheduleWednesdayFrom: "",
+      scheduleWednesdayTo: "",
+      scheduleThursdayFrom: "",
+      scheduleThursdayTo: "",
+      scheduleFridayFrom: "",
+      scheduleFridayTo: "",
+      scheduleSaturdayFrom: "",
+      scheduleSaturdayTo: "",
+      scheduleSundayFrom: "",
+      scheduleSundayTo: "",
+      scheduleStartDate: "",
+      scheduleAcknowledged: false,
+      w2MaritalStatus: undefined,
+      w2Allowances: "",
+      w2AdditionalWithholding: "",
+      w2Exempt: false,
+      w2Acknowledged: false,
       backgroundCheckConsent: false,
     },
   });
@@ -2050,7 +2146,7 @@ export function ApplicationForm() {
                 control={form.control}
                 name="retainCommonLawRights"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30 mb-6">
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
                     <FormControl>
                       <Checkbox
                         checked={field.value}
@@ -2063,6 +2159,559 @@ export function ApplicationForm() {
                       </FormLabel>
                       <FormDescription>
                         Check this box only if you wish to retain your common law right to recover damages. This means you will NOT be covered by workers' compensation benefits.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 19: Uniform Checklist */}
+          {currentStep === 19 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <ClipboardList className="w-5 h-5 text-primary" />
+                  Uniform Check List
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Uniforms Received
+                </p>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-4 mb-6 text-sm">
+                <p>
+                  Check all uniform items that you have received. All items must be returned upon separation from the company.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Shirts</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
+                <FormField
+                  control={form.control}
+                  name="uniformLongSleeveShirt"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Long Sleeve Shirt (complete with patches)</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformShortSleeveButtonUp"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Short Sleeve Button Up Shirt (complete with patches)</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformShortSleeveShirt"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Short Sleeve Shirt (complete with patches)</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformHighVisLongSleeve"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">High Visibility Traffic Long Sleeve Shirt</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformHighVisShortSleeve"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">High Visibility Traffic Short Sleeve Shirt</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Accessories & Equipment</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+                <FormField
+                  control={form.control}
+                  name="uniformTie"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Tie</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformSilverBadge"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Silver Badge</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformSilverSOs"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Silver SO's</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformPants"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Pants</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformBomberJacket"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Bomber Jacket</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformJacket"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Jacket</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformBeanieHat"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Beanie Hat</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformBaseballHat"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Baseball Hat</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformFlashlight"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Flashlight</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformFlagPatch"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Flag Patch</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformRadio"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">Radio</FormLabel>
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="uniformIdBadge"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-lg border p-3 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                      <FormLabel className="cursor-pointer text-sm">ID Badge</FormLabel>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="uniformChecklistAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge receipt of the uniform items checked above *
+                      </FormLabel>
+                      <FormDescription>
+                        I agree to return all items upon separation from the company.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 20: Work Schedule */}
+          {currentStep === 20 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <CalendarClock className="w-5 h-5 text-primary" />
+                  Initial Work Schedule
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Welcome to Kairos Security!
+                </p>
+              </div>
+
+              <div className="bg-accent/10 border border-accent/20 rounded-lg p-4 mb-6 text-sm">
+                <p>
+                  <strong>Important:</strong> This schedule is not fixed and is subject to change at any time based on operational needs or client requirements. You will be notified promptly of any adjustments to your schedule.
+                </p>
+              </div>
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Post Location</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <FormField
+                  control={form.control}
+                  name="schedulePostAddress"
+                  render={({ field }) => (
+                    <FormItem className="md:col-span-2">
+                      <FormLabel>Post Address</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Street Address" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="schedulePostCity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>City</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="schedulePostState"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>State</FormLabel>
+                        <FormControl>
+                          <Input maxLength={2} placeholder="TX" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="schedulePostZip"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>ZIP</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Your Schedule</h3>
+              <div className="space-y-3 mb-6">
+                {[
+                  { day: "Monday", fromField: "scheduleMondayFrom" as const, toField: "scheduleMondayTo" as const },
+                  { day: "Tuesday", fromField: "scheduleTuesdayFrom" as const, toField: "scheduleTuesdayTo" as const },
+                  { day: "Wednesday", fromField: "scheduleWednesdayFrom" as const, toField: "scheduleWednesdayTo" as const },
+                  { day: "Thursday", fromField: "scheduleThursdayFrom" as const, toField: "scheduleThursdayTo" as const },
+                  { day: "Friday", fromField: "scheduleFridayFrom" as const, toField: "scheduleFridayTo" as const },
+                  { day: "Saturday", fromField: "scheduleSaturdayFrom" as const, toField: "scheduleSaturdayTo" as const },
+                  { day: "Sunday", fromField: "scheduleSundayFrom" as const, toField: "scheduleSundayTo" as const },
+                ].map(({ day, fromField, toField }) => (
+                  <div key={day} className="grid grid-cols-3 gap-4 items-center p-3 rounded-lg bg-muted/30">
+                    <span className="font-medium">{day}</span>
+                    <FormField
+                      control={form.control}
+                      name={fromField}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" placeholder="From" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name={toField}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormControl>
+                            <Input type="time" placeholder="To" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <FormField
+                control={form.control}
+                name="scheduleStartDate"
+                render={({ field }) => (
+                  <FormItem className="mb-6">
+                    <FormLabel>Start Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="scheduleAcknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I acknowledge my initial work schedule *
+                      </FormLabel>
+                      <FormDescription>
+                        I understand this schedule is subject to change based on operational needs.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+
+          {/* Step 21: W-2 Information */}
+          {currentStep === 21 && (
+            <div className="form-section animate-fade-in">
+              <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                  <Receipt className="w-5 h-5 text-primary" />
+                  W-2 Tax Information
+                </h2>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Employee's Withholding Certificate
+                </p>
+              </div>
+
+              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
+                <p>
+                  Complete this form so that your employer can withhold the correct federal income tax from your pay. Consider completing a new Form W-4 each year and when your personal or financial situation changes.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <FormField
+                  control={form.control}
+                  name="w2MaritalStatus"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Filing Status</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="space-y-2"
+                        >
+                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                            <RadioGroupItem value="single" id="w2_single" />
+                            <label htmlFor="w2_single" className="cursor-pointer text-sm">
+                              Single or Married filing separately
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                            <RadioGroupItem value="married" id="w2_married" />
+                            <label htmlFor="w2_married" className="cursor-pointer text-sm">
+                              Married filing jointly
+                            </label>
+                          </div>
+                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
+                            <RadioGroupItem value="married_withhold_single" id="w2_married_single" />
+                            <label htmlFor="w2_married_single" className="cursor-pointer text-sm">
+                              Married, but withhold at higher Single rate
+                            </label>
+                          </div>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="w2Allowances"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Total Number of Allowances</FormLabel>
+                        <FormControl>
+                          <Input type="number" min="0" placeholder="0" {...field} />
+                        </FormControl>
+                        <FormDescription>Enter the number of allowances you are claiming</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="w2AdditionalWithholding"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Additional Amount to Withhold</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="$0.00" {...field} />
+                        </FormControl>
+                        <FormDescription>Extra amount to withhold from each paycheck (optional)</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={form.control}
+                name="w2Exempt"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30 mb-6">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I claim exemption from withholding
+                      </FormLabel>
+                      <FormDescription>
+                        Check this only if you had no tax liability last year AND expect none this year. This exemption expires February 15 of next year.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="w2Acknowledged"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5 mb-6">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel className="font-semibold">
+                        I certify that my tax information is correct *
+                      </FormLabel>
+                      <FormDescription>
+                        Under penalties of perjury, I declare that this certificate, to the best of my knowledge and belief, is true, correct, and complete.
                       </FormDescription>
                     </div>
                     <FormMessage />
