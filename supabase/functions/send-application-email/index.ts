@@ -105,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Authorization": `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Kairos Security Applications <onboarding@resend.dev>",
+        from: "Kairos Security Applications <applications@hiring.kairossecurity.com>",
         to: ["info@kairossecurity.com"],
         subject: `New Application: ${application.firstName} ${application.lastName} - ${application.desiredPosition || 'Security Officer'}`,
         html: emailHtml,
