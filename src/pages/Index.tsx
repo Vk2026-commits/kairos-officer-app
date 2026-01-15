@@ -1,17 +1,34 @@
-import { Shield, CheckCircle, Clock, Users } from "lucide-react";
+import { CheckCircle, Clock, Users, Phone, Mail } from "lucide-react";
 import { ApplicationForm } from "@/components/ApplicationForm";
+import kairosLogo from "@/assets/kairos-logo.png";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="hero-gradient text-primary-foreground">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center gap-3">
-            <Shield className="w-10 h-10 text-accent" />
-            <div>
-              <h1 className="text-2xl font-display font-bold tracking-tight">KAIROS SECURITY</h1>
-              <p className="text-sm text-primary-foreground/80">Professional Protection Services</p>
+      <header className="bg-card border-b border-border">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <img 
+              src={kairosLogo} 
+              alt="Kairos Security" 
+              className="h-16 md:h-20 object-contain"
+            />
+            <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
+              <a 
+                href="tel:1-888-524-7678" 
+                className="flex items-center gap-2 text-foreground hover:text-accent transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                1-888-524-7678
+              </a>
+              <a 
+                href="mailto:info@kairossecurity.com" 
+                className="flex items-center gap-2 text-foreground hover:text-accent transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                info@kairossecurity.com
+              </a>
             </div>
           </div>
         </div>
@@ -20,9 +37,9 @@ const Index = () => {
       {/* Hero Section */}
       <section className="hero-gradient text-primary-foreground py-16 md:py-24">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">
+          <h1 className="text-3xl md:text-5xl font-display font-bold mb-4">
             Join Our Elite Security Team
-          </h2>
+          </h1>
           <p className="text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto mb-8">
             Start your career with one of the most trusted security companies. 
             Complete your application online in just a few minutes.
@@ -75,14 +92,31 @@ const Index = () => {
       <footer className="hero-gradient text-primary-foreground py-8">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex items-center gap-2">
-              <Shield className="w-6 h-6 text-accent" />
-              <span className="font-display font-semibold">KAIROS SECURITY</span>
+            <img 
+              src={kairosLogo} 
+              alt="Kairos Security" 
+              className="h-12 object-contain brightness-0 invert"
+            />
+            <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
+              <a 
+                href="tel:1-888-524-7678" 
+                className="flex items-center gap-2 hover:text-accent transition-colors"
+              >
+                <Phone className="w-4 h-4" />
+                1-888-524-7678
+              </a>
+              <a 
+                href="mailto:info@kairossecurity.com" 
+                className="flex items-center gap-2 hover:text-accent transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                info@kairossecurity.com
+              </a>
             </div>
-            <p className="text-sm text-primary-foreground/70">
-              © 2026 Kairos Security. All rights reserved.
-            </p>
           </div>
+          <p className="text-center text-sm text-primary-foreground/70 mt-6">
+            © 2026 Kairos Security. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>
