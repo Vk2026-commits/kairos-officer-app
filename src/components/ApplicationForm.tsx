@@ -7,7 +7,7 @@ import {
   User, Phone, CreditCard, Heart, FileText, Package, Lock, 
   FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2,
   Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2,
-  ClipboardList, CalendarClock, Receipt
+  ClipboardList, CalendarClock, Receipt, Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { supabase } from "@/integrations/supabase/client";
 
 const applicationSchema = z.object({
   // Section 1: I-9 Employment Eligibility (Employee Information)
@@ -217,6 +218,7 @@ const TOTAL_STEPS = 21;
 
 export function ApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
@@ -348,11 +350,120 @@ export function ApplicationForm() {
     },
   });
 
-  const onSubmit = (data: ApplicationFormData) => {
-    console.log("Application submitted:", data);
-    toast.success("Application submitted successfully!", {
-      description: "We will contact you within 2-3 business days.",
-    });
+  const onSubmit = async (data: ApplicationFormData) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Prepare the application data
+      const applicationData = {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        middle_name: data.middleInitial || null,
+        address: data.address || null,
+        city: data.city || null,
+        state: data.state || null,
+        zip_code: data.zipCode || null,
+        phone: data.phone || null,
+        email: data.email || null,
+        date_of_birth: data.dateOfBirth || null,
+        ssn: data.ssn || null,
+        citizenship_status: data.citizenshipStatus || null,
+        desired_position: data.position || null,
+        direct_deposit_consent: true,
+        bank_name: data.bankName || null,
+        routing_number: data.routingNumber || null,
+        account_number: data.accountNumber || null,
+        account_type: data.accountType || null,
+        emergency_contact_name: data.emergencyName1 || null,
+        emergency_contact_relationship: data.emergencyRelationship1 || null,
+        emergency_contact_phone: data.emergencyPhone1 || null,
+        emergency_contact_address: data.emergencyAddress1 || null,
+        background_consent: data.backgroundCheckConsent || null,
+        uniform_shirt_size: data.uniformLongSleeveShirt ? 'Long Sleeve' : data.uniformShortSleeveShirt ? 'Short Sleeve' : null,
+        w2_filing_status: data.w2MaritalStatus || null,
+        w2_allowances: data.w2Allowances || null,
+        w2_additional_withholding: data.w2AdditionalWithholding || null,
+        policy_acknowledgements: JSON.parse(JSON.stringify({
+          handbook: data.handbookAcknowledged,
+          confidentiality: data.confidentialityAcknowledged,
+          temporaryEmployment: data.temporaryEmploymentAcknowledged,
+          personalAppearance: data.personalAppearanceAcknowledged,
+          attendance: data.attendancePolicyAcknowledged,
+          disciplinary: data.disciplinaryPolicyAcknowledged,
+          drugAlcohol: data.drugAlcoholPolicyAcknowledged,
+          drugTest: data.drugTestConsentAcknowledged,
+          jobDescription: data.jobDescriptionAcknowledged,
+          socialMedia: data.socialMediaPolicyAcknowledged,
+          workersComp: data.workersCompNoticeAcknowledged,
+        })),
+        availability: JSON.parse(JSON.stringify({
+          monday: { from: data.mondayFrom, to: data.mondayTo },
+          tuesday: { from: data.tuesdayFrom, to: data.tuesdayTo },
+          wednesday: { from: data.wednesdayFrom, to: data.wednesdayTo },
+          thursday: { from: data.thursdayFrom, to: data.thursdayTo },
+          friday: { from: data.fridayFrom, to: data.fridayTo },
+          saturday: { from: data.saturdayFrom, to: data.saturdayTo },
+          sunday: { from: data.sundayFrom, to: data.sundayTo },
+        })),
+        full_form_data: JSON.parse(JSON.stringify(data)),
+      };
+
+      // Save to database
+      const { data: insertedApplication, error: dbError } = await supabase
+        .from('applications')
+        .insert(applicationData)
+        .select()
+        .single();
+
+      if (dbError) {
+        console.error("Database error:", dbError);
+        throw new Error("Failed to save application");
+      }
+
+      console.log("Application saved to database:", insertedApplication);
+
+      // Send email notification
+      const { error: emailError } = await supabase.functions.invoke('send-application-email', {
+        body: {
+          id: insertedApplication.id,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          phone: data.phone,
+          dateOfBirth: data.dateOfBirth,
+          address: data.address,
+          city: data.city,
+          state: data.state,
+          zipCode: data.zipCode,
+          desiredPosition: data.position,
+          fullFormData: data,
+        },
+      });
+
+      if (emailError) {
+        console.error("Email error:", emailError);
+        // Don't throw - application was saved, just email failed
+        toast.warning("Application saved but email notification failed", {
+          description: "We received your application and will contact you soon.",
+        });
+      } else {
+        toast.success("Application submitted successfully!", {
+          description: "We will contact you within 2-3 business days.",
+        });
+      }
+
+      // Reset form after successful submission
+      form.reset();
+      setCurrentStep(1);
+      
+    } catch (error) {
+      console.error("Submission error:", error);
+      toast.error("Failed to submit application", {
+        description: "Please try again or contact us directly.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const nextStep = () => {
@@ -2772,10 +2883,20 @@ export function ApplicationForm() {
             ) : (
               <Button
                 type="submit"
+                disabled={isSubmitting}
                 className="flex items-center gap-2 bg-primary hover:bg-primary/90"
               >
-                <Send className="w-4 h-4" />
-                Submit Application
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Submit Application
+                  </>
+                )}
               </Button>
             )}
           </div>
