@@ -35,140 +35,146 @@ export async function generateW4PDF(application: Application): Promise<void> {
 
     const data = application.full_form_data || {};
 
-    // Helper function to draw text
-    const drawText = (text: string, x: number, y: number, size: number = 10, bold: boolean = false) => {
-      firstPage.drawText(String(text || ""), {
+    // Helper function to draw text (y from bottom of page)
+    const drawText = (text: string, x: number, yFromBottom: number, size: number = 10, bold: boolean = false) => {
+      if (!text || text === "undefined" || text === "null") return;
+      firstPage.drawText(String(text), {
         x,
-        y: height - y,
+        y: yFromBottom,
         size,
         font: bold ? helveticaBold : helveticaFont,
         color: rgb(0, 0, 0),
       });
     };
 
-    // Helper to draw an X inside a checkbox (avoids unicode checkmark font issues)
-    const drawCheck = (x: number, y: number) => {
-      const yPdf = height - y;
-      const box = 8;
-      const thickness = 1.5;
-
+    // Helper to draw an X inside a checkbox
+    const drawCheck = (x: number, yFromBottom: number) => {
+      const size = 8;
       firstPage.drawLine({
-        start: { x, y: yPdf },
-        end: { x: x + box, y: yPdf + box },
-        thickness,
+        start: { x: x + 1, y: yFromBottom + 1 },
+        end: { x: x + size - 1, y: yFromBottom + size - 1 },
+        thickness: 1.5,
         color: rgb(0, 0, 0),
       });
-
       firstPage.drawLine({
-        start: { x, y: yPdf + box },
-        end: { x: x + box, y: yPdf },
-        thickness,
+        start: { x: x + 1, y: yFromBottom + size - 1 },
+        end: { x: x + size - 1, y: yFromBottom + 1 },
+        thickness: 1.5,
         color: rgb(0, 0, 0),
       });
     };
 
-    // Step 1: Personal Information
-    // (a) First name and middle initial
+    // Get data values
     const firstName = String(data.firstName || application.first_name || "");
     const middleInitial = String(data.middleInitial || application.middle_name || "");
-    drawText(`${firstName} ${middleInitial}`.trim(), 32, 119, 10);
-
-    // Last name
     const lastName = String(data.lastName || application.last_name || "");
-    drawText(lastName, 200, 119, 10);
-
-    // (b) Social security number
     const ssn = String(data.ssn || application.ssn || "");
-    drawText(ssn, 475, 119, 10);
-
-    // Address
     const address = String(data.address || application.address || "");
     const aptNumber = String(data.aptNumber || "");
-    const fullAddress = aptNumber ? `${address}, ${aptNumber}` : address;
-    drawText(fullAddress, 32, 139, 10);
-
-    // City, State, ZIP
     const city = String(data.city || application.city || "");
     const state = String(data.state || application.state || "");
     const zipCode = String(data.zipCode || application.zip_code || "");
-    drawText(`${city}, ${state} ${zipCode}`, 32, 159, 10);
-
-    // (c) Filing status checkboxes - positions based on the form layout
     const filingStatus = String(data.w4FilingStatus || "single");
+
+    // ========== STEP 1: Personal Information ==========
+    // PDF coordinates: y increases from bottom, form is ~792 pts tall
     
+    // (a) First name and middle initial - top left field box
+    drawText(`${firstName} ${middleInitial}`.trim(), 100, height - 83, 10);
+    
+    // Last name - middle field box  
+    drawText(lastName, 300, height - 83, 10);
+    
+    // (b) Social security number - right side
+    drawText(ssn, 495, height - 83, 10);
+    
+    // Address line
+    const fullAddress = aptNumber ? `${address}, ${aptNumber}` : address;
+    drawText(fullAddress, 100, height - 105, 10);
+    
+    // City, State, ZIP
+    drawText(`${city}, ${state} ${zipCode}`, 100, height - 127, 10);
+    
+    // (c) Filing status checkboxes
+    // Single or Married filing separately - first checkbox
     if (filingStatus === "single") {
-      drawCheck(33, 179); // Single or Married filing separately
-    } else if (filingStatus === "married_jointly") {
-      drawCheck(156, 179); // Married filing jointly
-    } else if (filingStatus === "head_of_household") {
-      drawCheck(330, 179); // Head of household
+      drawCheck(100, height - 148);
+    }
+    // Married filing jointly - second checkbox
+    if (filingStatus === "married_jointly") {
+      drawCheck(100, height - 162);
+    }
+    // Head of household - third checkbox
+    if (filingStatus === "head_of_household") {
+      drawCheck(100, height - 176);
     }
 
-    // Step 2: Multiple Jobs checkbox
+    // ========== STEP 2: Multiple Jobs ==========
+    // Checkbox for (c) two jobs total
     if (data.w4MultipleJobsCheckbox) {
-      drawCheck(33, 282); // Two jobs checkbox
+      drawCheck(555, height - 355);
     }
 
-    // Step 3: Claim Dependents
-    // Qualifying children amount
+    // ========== STEP 3: Claim Dependents ==========
+    // Qualifying children amount - right side of first line
     const qualifyingChildrenAmount = String(data.w4QualifyingChildrenAmount || "");
-    if (qualifyingChildrenAmount) {
-      drawText(qualifyingChildrenAmount, 540, 332, 10);
+    if (qualifyingChildrenAmount && qualifyingChildrenAmount !== "undefined") {
+      drawText(qualifyingChildrenAmount, 530, height - 408, 10);
     }
-
+    
     // Other dependents amount
     const otherDependentsAmount = String(data.w4OtherDependentsAmount || "");
-    if (otherDependentsAmount) {
-      drawText(otherDependentsAmount, 540, 348, 10);
+    if (otherDependentsAmount && otherDependentsAmount !== "undefined") {
+      drawText(otherDependentsAmount, 530, height - 423, 10);
     }
-
-    // Total credits (line 3)
+    
+    // Line 3 total credits
     const totalCredits = String(data.w4TotalCredits || "");
-    if (totalCredits) {
-      drawText(totalCredits, 540, 368, 10);
+    if (totalCredits && totalCredits !== "undefined") {
+      drawText(totalCredits, 555, height - 447, 10);
     }
 
-    // Step 4: Other Adjustments
+    // ========== STEP 4: Other Adjustments ==========
     // 4(a) Other income
     const otherIncome = String(data.w4OtherIncome || "");
-    if (otherIncome) {
-      drawText(otherIncome, 540, 410, 10);
+    if (otherIncome && otherIncome !== "undefined") {
+      drawText(otherIncome, 555, height - 490, 10);
     }
-
+    
     // 4(b) Deductions
     const deductions = String(data.w4Deductions || "");
-    if (deductions) {
-      drawText(deductions, 540, 432, 10);
+    if (deductions && deductions !== "undefined") {
+      drawText(deductions, 555, height - 530, 10);
     }
-
+    
     // 4(c) Extra withholding
     const extraWithholding = String(data.w4ExtraWithholding || "");
-    if (extraWithholding) {
-      drawText(extraWithholding, 540, 454, 10);
+    if (extraWithholding && extraWithholding !== "undefined") {
+      drawText(extraWithholding, 555, height - 555, 10);
     }
 
-    // Step 5: Signature and Date
-    // Employee signature (we'll type the name as electronic signature)
-    drawText(`${firstName} ${lastName}`, 100, 508, 10);
-
+    // ========== STEP 5: Signature ==========
+    // Employee signature
+    drawText(`${firstName} ${lastName}`, 130, height - 620, 10);
+    
     // Date
     const signatureDate = String(data.w4SignatureDate || new Date().toISOString().split("T")[0]);
-    drawText(signatureDate, 480, 508, 10);
+    drawText(signatureDate, 510, height - 620, 10);
 
-    // Employers Only section
+    // ========== EMPLOYERS ONLY ==========
     // Employer's name and address
-    drawText("Kairos Security LLC", 100, 545, 9);
-
+    drawText("Kairos Security LLC", 130, height - 660, 9);
+    
     // First date of employment
     const startDate = String(data.scheduledStartDate || data.scheduleStartDate || "");
-    if (startDate) {
-      drawText(startDate, 320, 545, 9);
+    if (startDate && startDate !== "undefined") {
+      drawText(startDate, 385, height - 660, 9);
     }
 
     // Save the PDF
     const pdfBytes = await pdfDoc.save();
 
-    // Create a blob and download - convert Uint8Array to regular array buffer
+    // Create a blob and download
     const blob = new Blob([new Uint8Array(pdfBytes)], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
