@@ -46,13 +46,23 @@ export async function generateW4PDF(application: Application): Promise<void> {
       });
     };
 
-    // Helper to draw a checkmark
+    // Helper to draw an X inside a checkbox (avoids unicode checkmark font issues)
     const drawCheck = (x: number, y: number) => {
-      firstPage.drawText("✓", {
-        x,
-        y: height - y,
-        size: 12,
-        font: helveticaBold,
+      const yPdf = height - y;
+      const box = 8;
+      const thickness = 1.5;
+
+      firstPage.drawLine({
+        start: { x, y: yPdf },
+        end: { x: x + box, y: yPdf + box },
+        thickness,
+        color: rgb(0, 0, 0),
+      });
+
+      firstPage.drawLine({
+        start: { x, y: yPdf + box },
+        end: { x: x + box, y: yPdf },
+        thickness,
         color: rgb(0, 0, 0),
       });
     };
