@@ -78,97 +78,98 @@ export async function generateW4PDF(application: Application): Promise<void> {
 
     // ========== STEP 1: Personal Information ==========
     // PDF coordinates: y increases from bottom, form is ~792 pts tall
+    // Adjusted values - moved down by ~15-20 pts
     
     // (a) First name and middle initial - top left field box
-    drawText(`${firstName} ${middleInitial}`.trim(), 100, height - 83, 10);
+    drawText(`${firstName} ${middleInitial}`.trim(), 100, height - 100, 10);
     
     // Last name - middle field box  
-    drawText(lastName, 300, height - 83, 10);
+    drawText(lastName, 300, height - 100, 10);
     
     // (b) Social security number - right side
-    drawText(ssn, 495, height - 83, 10);
+    drawText(ssn, 495, height - 100, 10);
     
     // Address line
     const fullAddress = aptNumber ? `${address}, ${aptNumber}` : address;
-    drawText(fullAddress, 100, height - 105, 10);
+    drawText(fullAddress, 100, height - 122, 10);
     
     // City, State, ZIP
-    drawText(`${city}, ${state} ${zipCode}`, 100, height - 127, 10);
+    drawText(`${city}, ${state} ${zipCode}`, 100, height - 145, 10);
     
     // (c) Filing status checkboxes
     // Single or Married filing separately - first checkbox
     if (filingStatus === "single") {
-      drawCheck(100, height - 148);
+      drawCheck(100, height - 168);
     }
     // Married filing jointly - second checkbox
     if (filingStatus === "married_jointly") {
-      drawCheck(100, height - 162);
+      drawCheck(100, height - 182);
     }
     // Head of household - third checkbox
     if (filingStatus === "head_of_household") {
-      drawCheck(100, height - 176);
+      drawCheck(100, height - 196);
     }
 
     // ========== STEP 2: Multiple Jobs ==========
     // Checkbox for (c) two jobs total
     if (data.w4MultipleJobsCheckbox) {
-      drawCheck(555, height - 355);
+      drawCheck(555, height - 385);
     }
 
     // ========== STEP 3: Claim Dependents ==========
     // Qualifying children amount - right side of first line
     const qualifyingChildrenAmount = String(data.w4QualifyingChildrenAmount || "");
     if (qualifyingChildrenAmount && qualifyingChildrenAmount !== "undefined") {
-      drawText(qualifyingChildrenAmount, 530, height - 408, 10);
+      drawText(qualifyingChildrenAmount, 530, height - 438, 10);
     }
     
     // Other dependents amount
     const otherDependentsAmount = String(data.w4OtherDependentsAmount || "");
     if (otherDependentsAmount && otherDependentsAmount !== "undefined") {
-      drawText(otherDependentsAmount, 530, height - 423, 10);
+      drawText(otherDependentsAmount, 530, height - 453, 10);
     }
     
     // Line 3 total credits
     const totalCredits = String(data.w4TotalCredits || "");
     if (totalCredits && totalCredits !== "undefined") {
-      drawText(totalCredits, 555, height - 447, 10);
+      drawText(totalCredits, 555, height - 477, 10);
     }
 
     // ========== STEP 4: Other Adjustments ==========
     // 4(a) Other income
     const otherIncome = String(data.w4OtherIncome || "");
     if (otherIncome && otherIncome !== "undefined") {
-      drawText(otherIncome, 555, height - 490, 10);
+      drawText(otherIncome, 555, height - 520, 10);
     }
     
     // 4(b) Deductions
     const deductions = String(data.w4Deductions || "");
     if (deductions && deductions !== "undefined") {
-      drawText(deductions, 555, height - 530, 10);
+      drawText(deductions, 555, height - 560, 10);
     }
     
     // 4(c) Extra withholding
     const extraWithholding = String(data.w4ExtraWithholding || "");
     if (extraWithholding && extraWithholding !== "undefined") {
-      drawText(extraWithholding, 555, height - 555, 10);
+      drawText(extraWithholding, 555, height - 585, 10);
     }
 
     // ========== STEP 5: Signature ==========
     // Employee signature
-    drawText(`${firstName} ${lastName}`, 130, height - 620, 10);
+    drawText(`${firstName} ${lastName}`, 130, height - 650, 10);
     
     // Date
     const signatureDate = String(data.w4SignatureDate || new Date().toISOString().split("T")[0]);
-    drawText(signatureDate, 510, height - 620, 10);
+    drawText(signatureDate, 510, height - 650, 10);
 
     // ========== EMPLOYERS ONLY ==========
     // Employer's name and address
-    drawText("Kairos Security LLC", 130, height - 660, 9);
+    drawText("Kairos Security LLC", 130, height - 690, 9);
     
     // First date of employment
     const startDate = String(data.scheduledStartDate || data.scheduleStartDate || "");
     if (startDate && startDate !== "undefined") {
-      drawText(startDate, 385, height - 660, 9);
+      drawText(startDate, 385, height - 690, 9);
     }
 
     // Save the PDF
