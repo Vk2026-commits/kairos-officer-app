@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download } from "lucide-react";
 import { format } from "date-fns";
+import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 
 interface Application {
   id: string;
@@ -154,13 +155,22 @@ export default function Admin() {
                         </span>
                       </div>
                     </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Eye className="w-4 h-4 mr-2" />
-                          View Details
-                        </Button>
-                      </DialogTrigger>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => generateApplicationPDF(app)}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Download PDF
+                      </Button>
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="outline" size="sm">
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Details
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-3xl max-h-[90vh]">
                         <DialogHeader>
                           <DialogTitle>
@@ -211,6 +221,7 @@ export default function Admin() {
                         </ScrollArea>
                       </DialogContent>
                     </Dialog>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
