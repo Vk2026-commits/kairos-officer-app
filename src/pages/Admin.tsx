@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
+import { generateW4PDF } from "@/lib/generateW4PDF";
 
 interface Application {
   id: string;
@@ -155,14 +156,22 @@ export default function Admin() {
                         </span>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="default"
                         size="sm"
                         onClick={() => generateApplicationPDF(app)}
                       >
                         <Download className="w-4 h-4 mr-2" />
-                        Download PDF
+                        Full Application
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => generateW4PDF(app)}
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        Form W-4
                       </Button>
                       <Dialog>
                         <DialogTrigger asChild>

@@ -177,12 +177,28 @@ const applicationSchema = z.object({
   scheduleStartDate: z.string().optional(),
   scheduleAcknowledged: z.boolean().refine(val => val === true, "You must acknowledge your work schedule"),
   
-  // Section 21: W-2 Information
-  w2MaritalStatus: z.enum(["single", "married", "married_withhold_single"]).optional(),
-  w2Allowances: z.string().optional(),
-  w2AdditionalWithholding: z.string().optional(),
-  w2Exempt: z.boolean().optional(),
-  w2Acknowledged: z.boolean().refine(val => val === true, "You must acknowledge the W-2 information"),
+  // Section 21: W-4 Employee's Withholding Certificate (2025)
+  // Step 1: Personal Information (uses existing fields)
+  w4FilingStatus: z.enum(["single", "married_jointly", "head_of_household"]),
+  
+  // Step 2: Multiple Jobs or Spouse Works
+  w4MultipleJobsCheckbox: z.boolean().optional(),
+  
+  // Step 3: Claim Dependents
+  w4QualifyingChildrenCount: z.string().optional(),
+  w4QualifyingChildrenAmount: z.string().optional(),
+  w4OtherDependentsCount: z.string().optional(),
+  w4OtherDependentsAmount: z.string().optional(),
+  w4TotalCredits: z.string().optional(),
+  
+  // Step 4: Other Adjustments
+  w4OtherIncome: z.string().optional(),
+  w4Deductions: z.string().optional(),
+  w4ExtraWithholding: z.string().optional(),
+  
+  // Step 5: Signature
+  w4SignatureDate: z.string().optional(),
+  w4Acknowledged: z.boolean().refine(val => val === true, "You must sign the W-4 form"),
   
   // Background Check Consent
   backgroundCheckConsent: z.boolean().refine(val => val === true, "You must consent to background check"),
@@ -211,7 +227,7 @@ const steps = [
   { id: 18, title: "Workers' Comp", icon: Building2, description: "Insurance Notice" },
   { id: 19, title: "Uniform", icon: ClipboardList, description: "Uniform Checklist" },
   { id: 20, title: "Schedule", icon: CalendarClock, description: "Work Schedule" },
-  { id: 21, title: "W-2 Info", icon: Receipt, description: "Tax Information" },
+  { id: 21, title: "Form W-4", icon: Receipt, description: "Tax Withholding" },
 ];
 
 const TOTAL_STEPS = 21;
@@ -341,11 +357,18 @@ export function ApplicationForm() {
       scheduleSundayTo: "",
       scheduleStartDate: "",
       scheduleAcknowledged: false,
-      w2MaritalStatus: undefined,
-      w2Allowances: "",
-      w2AdditionalWithholding: "",
-      w2Exempt: false,
-      w2Acknowledged: false,
+      w4FilingStatus: "single",
+      w4MultipleJobsCheckbox: false,
+      w4QualifyingChildrenCount: "",
+      w4QualifyingChildrenAmount: "",
+      w4OtherDependentsCount: "",
+      w4OtherDependentsAmount: "",
+      w4TotalCredits: "",
+      w4OtherIncome: "",
+      w4Deductions: "",
+      w4ExtraWithholding: "",
+      w4SignatureDate: "",
+      w4Acknowledged: false,
       backgroundCheckConsent: false,
     },
   });
@@ -380,9 +403,9 @@ export function ApplicationForm() {
         emergency_contact_address: data.emergencyAddress1 || null,
         background_consent: data.backgroundCheckConsent || null,
         uniform_shirt_size: data.uniformLongSleeveShirt ? 'Long Sleeve' : data.uniformShortSleeveShirt ? 'Short Sleeve' : null,
-        w2_filing_status: data.w2MaritalStatus || null,
-        w2_allowances: data.w2Allowances || null,
-        w2_additional_withholding: data.w2AdditionalWithholding || null,
+        w2_filing_status: data.w4FilingStatus || null,
+        w2_allowances: data.w4TotalCredits || null,
+        w2_additional_withholding: data.w4ExtraWithholding || null,
         policy_acknowledgements: JSON.parse(JSON.stringify({
           handbook: data.handbookAcknowledged,
           confidentiality: data.confidentialityAcknowledged,
@@ -2692,54 +2715,72 @@ export function ApplicationForm() {
             </div>
           )}
 
-          {/* Step 21: W-2 Information */}
+          {/* Step 21: W-4 Employee's Withholding Certificate */}
           {currentStep === 21 && (
             <div className="form-section animate-fade-in">
               <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 mb-6">
-                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-                  <Receipt className="w-5 h-5 text-primary" />
-                  W-2 Tax Information
-                </h2>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Employee's Withholding Certificate
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                      <Receipt className="w-5 h-5 text-primary" />
+                      Form W-4 (2025)
+                    </h2>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Employee's Withholding Certificate
+                    </p>
+                  </div>
+                  <div className="text-right text-xs text-muted-foreground">
+                    <p>OMB No. 1545-0074</p>
+                    <p>Department of the Treasury</p>
+                    <p>Internal Revenue Service</p>
+                  </div>
+                </div>
               </div>
 
-              <div className="bg-muted/50 rounded-lg p-6 mb-6 space-y-4 text-sm leading-relaxed">
-                <p>
-                  Complete this form so that your employer can withhold the correct federal income tax from your pay. Consider completing a new Form W-4 each year and when your personal or financial situation changes.
-                </p>
+              <div className="bg-muted/50 rounded-lg p-4 mb-6 text-sm">
+                <p className="font-medium mb-2">Complete Form W-4 so that your employer can withhold the correct federal income tax from your pay.</p>
+                <p className="text-muted-foreground">Give Form W-4 to your employer. Your withholding is subject to review by the IRS.</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Step 1: Enter Personal Information */}
+              <div className="border rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">1</span>
+                  Enter Personal Information
+                </h3>
+                
+                <div className="bg-muted/30 rounded-lg p-4 mb-4">
+                  <p className="text-sm text-muted-foreground">Your personal information has been pre-filled from Step 1 of this application (I-9 form).</p>
+                </div>
+
                 <FormField
                   control={form.control}
-                  name="w2MaritalStatus"
+                  name="w4FilingStatus"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Filing Status</FormLabel>
+                      <FormLabel className="font-semibold">(c) Filing Status *</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
                           defaultValue={field.value}
-                          className="space-y-2"
+                          className="space-y-2 mt-2"
                         >
-                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
-                            <RadioGroupItem value="single" id="w2_single" />
-                            <label htmlFor="w2_single" className="cursor-pointer text-sm">
+                          <div className="flex items-center space-x-2 p-3 rounded border hover:bg-muted/50">
+                            <RadioGroupItem value="single" id="w4_single" />
+                            <label htmlFor="w4_single" className="cursor-pointer text-sm flex-1">
                               Single or Married filing separately
                             </label>
                           </div>
-                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
-                            <RadioGroupItem value="married" id="w2_married" />
-                            <label htmlFor="w2_married" className="cursor-pointer text-sm">
-                              Married filing jointly
+                          <div className="flex items-center space-x-2 p-3 rounded border hover:bg-muted/50">
+                            <RadioGroupItem value="married_jointly" id="w4_married" />
+                            <label htmlFor="w4_married" className="cursor-pointer text-sm flex-1">
+                              Married filing jointly or Qualifying surviving spouse
                             </label>
                           </div>
-                          <div className="flex items-center space-x-2 p-2 rounded hover:bg-muted/50">
-                            <RadioGroupItem value="married_withhold_single" id="w2_married_single" />
-                            <label htmlFor="w2_married_single" className="cursor-pointer text-sm">
-                              Married, but withhold at higher Single rate
+                          <div className="flex items-center space-x-2 p-3 rounded border hover:bg-muted/50">
+                            <RadioGroupItem value="head_of_household" id="w4_head" />
+                            <label htmlFor="w4_head" className="cursor-pointer text-sm flex-1">
+                              Head of household (Check only if you're unmarried and pay more than half the costs of keeping up a home for yourself and a qualifying individual.)
                             </label>
                           </div>
                         </RadioGroup>
@@ -2748,87 +2789,218 @@ export function ApplicationForm() {
                     </FormItem>
                   )}
                 />
+              </div>
+
+              {/* Step 2: Multiple Jobs or Spouse Works */}
+              <div className="border rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">2</span>
+                  Multiple Jobs or Spouse Works
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Complete this step if you (1) hold more than one job at a time, or (2) are married filing jointly and your spouse also works.</p>
+
+                <FormField
+                  control={form.control}
+                  name="w4MultipleJobsCheckbox"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel>
+                          (c) If there are only two jobs total, check this box
+                        </FormLabel>
+                        <FormDescription>
+                          Do the same on Form W-4 for the other job. This option is generally more accurate if pay at the lower paying job is more than half of the pay at the higher paying job.
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Step 3: Claim Dependents */}
+              <div className="border rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">3</span>
+                  Claim Dependents
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">If your total income will be $200,000 or less ($400,000 or less if married filing jointly):</p>
 
                 <div className="space-y-4">
-                  <FormField
-                    control={form.control}
-                    name="w2Allowances"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Total Number of Allowances</FormLabel>
-                        <FormControl>
-                          <Input type="number" min="0" placeholder="0" {...field} />
-                        </FormControl>
-                        <FormDescription>Enter the number of allowances you are claiming</FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name="w4QualifyingChildrenCount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Number of qualifying children under age 17</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" placeholder="0" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <div className="text-center text-muted-foreground">× $2,000 =</div>
+                    <FormField
+                      control={form.control}
+                      name="w4QualifyingChildrenAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount</FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="$0" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <FormField
+                      control={form.control}
+                      name="w4OtherDependentsCount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Number of other dependents</FormLabel>
+                          <FormControl>
+                            <Input type="number" min="0" placeholder="0" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <div className="text-center text-muted-foreground">× $500 =</div>
+                    <FormField
+                      control={form.control}
+                      name="w4OtherDependentsAmount"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Amount</FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="$0" {...field} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
                   <FormField
                     control={form.control}
-                    name="w2AdditionalWithholding"
+                    name="w4TotalCredits"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Additional Amount to Withhold</FormLabel>
+                      <FormItem className="border-t pt-4">
+                        <FormLabel className="font-semibold">3. Total Credits (add amounts above)</FormLabel>
                         <FormControl>
-                          <Input type="text" placeholder="$0.00" {...field} />
+                          <Input type="text" placeholder="$0" {...field} />
                         </FormControl>
-                        <FormDescription>Extra amount to withhold from each paycheck (optional)</FormDescription>
-                        <FormMessage />
+                        <FormDescription>Add the amounts for qualifying children and other dependents. Enter the total here.</FormDescription>
                       </FormItem>
                     )}
                   />
                 </div>
               </div>
 
-              <FormField
-                control={form.control}
-                name="w2Exempt"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border p-4 hover:bg-muted/30 mb-6">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="font-semibold">
-                        I claim exemption from withholding
-                      </FormLabel>
-                      <FormDescription>
-                        Check this only if you had no tax liability last year AND expect none this year. This exemption expires February 15 of next year.
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Step 4: Other Adjustments */}
+              <div className="border rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">4</span>
+                  Other Adjustments (Optional)
+                </h3>
 
-              <FormField
-                control={form.control}
-                name="w2Acknowledged"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-lg border border-primary/30 p-4 bg-primary/5 mb-6">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel className="font-semibold">
-                        I certify that my tax information is correct *
-                      </FormLabel>
-                      <FormDescription>
-                        Under penalties of perjury, I declare that this certificate, to the best of my knowledge and belief, is true, correct, and complete.
-                      </FormDescription>
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <div className="space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="w4OtherIncome"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>4(a) Other income (not from jobs)</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="$0" {...field} />
+                        </FormControl>
+                        <FormDescription>If you want tax withheld for other income you expect this year that won't have withholding (interest, dividends, retirement income).</FormDescription>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="w4Deductions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>4(b) Deductions</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="$0" {...field} />
+                        </FormControl>
+                        <FormDescription>If you expect to claim deductions other than the standard deduction and want to reduce your withholding.</FormDescription>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="w4ExtraWithholding"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>4(c) Extra withholding</FormLabel>
+                        <FormControl>
+                          <Input type="text" placeholder="$0" {...field} />
+                        </FormControl>
+                        <FormDescription>Enter any additional tax you want withheld each pay period.</FormDescription>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Step 5: Sign Here */}
+              <div className="border border-primary/30 rounded-lg p-4 mb-6 bg-primary/5">
+                <h3 className="font-bold text-foreground mb-2 flex items-center gap-2">
+                  <span className="bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">5</span>
+                  Sign Here
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">Under penalties of perjury, I declare that this certificate, to the best of my knowledge and belief, is true, correct, and complete.</p>
+
+                <FormField
+                  control={form.control}
+                  name="w4SignatureDate"
+                  render={({ field }) => (
+                    <FormItem className="mb-4">
+                      <FormLabel>Date</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="w4Acknowledged"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="font-semibold">
+                          I certify that this Form W-4 is true, correct, and complete *
+                        </FormLabel>
+                        <FormDescription>
+                          By checking this box, I am electronically signing this Form W-4.
+                        </FormDescription>
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <h3 className="font-semibold text-foreground mb-4 border-b pb-2">Final Consent</h3>
               
