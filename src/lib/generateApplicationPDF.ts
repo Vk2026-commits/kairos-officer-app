@@ -236,8 +236,10 @@ const drawAvailabilityTable = (
   // Table rows
   doc.setFont("helvetica", "normal");
   days.forEach((day, idx) => {
-    const fromKey = `${fromPrefix}${day.charAt(0).toUpperCase() + day.slice(1)}From`;
-    const toKey = `${toPrefix}${day.charAt(0).toUpperCase() + day.slice(1)}To`;
+    // Build key: if prefix is empty, use lowercase day (mondayFrom), otherwise capitalize (scheduleMondayFrom)
+    const dayPart = fromPrefix ? day.charAt(0).toUpperCase() + day.slice(1) : day;
+    const fromKey = `${fromPrefix}${dayPart}From`;
+    const toKey = `${toPrefix}${dayPart}To`;
     const fromValue = formData[fromKey] as string | undefined;
     const toValue = formData[toKey] as string | undefined;
     
