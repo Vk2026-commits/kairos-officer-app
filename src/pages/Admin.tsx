@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, Building, CreditCard } from "lucide-react";
 import { format } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
@@ -285,6 +285,42 @@ export default function Admin() {
                       </div>
                     </div>
                     
+                    {/* Direct Deposit Info */}
+                    {(app.full_form_data?.bankName || app.full_form_data?.accountNumber || app.full_form_data?.routingNumber) && (
+                      <div className="pt-2 border-t">
+                        <div className="flex items-center gap-2 text-sm font-medium mb-2">
+                          <CreditCard className="w-4 h-4 text-primary" />
+                          Direct Deposit Information
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-sm bg-muted/30 p-3 rounded-lg">
+                          {app.full_form_data?.bankName && (
+                            <div>
+                              <span className="text-muted-foreground block text-xs">Bank Name</span>
+                              <span className="font-medium">{String(app.full_form_data.bankName)}</span>
+                            </div>
+                          )}
+                          {app.full_form_data?.routingNumber && (
+                            <div>
+                              <span className="text-muted-foreground block text-xs">Routing Number</span>
+                              <span className="font-mono font-medium">{String(app.full_form_data.routingNumber)}</span>
+                            </div>
+                          )}
+                          {app.full_form_data?.accountNumber && (
+                            <div>
+                              <span className="text-muted-foreground block text-xs">Account Number</span>
+                              <span className="font-mono font-medium">{String(app.full_form_data.accountNumber)}</span>
+                            </div>
+                          )}
+                          {app.full_form_data?.accountType && (
+                            <div>
+                              <span className="text-muted-foreground block text-xs">Account Type</span>
+                              <span className="font-medium capitalize">{String(app.full_form_data.accountType)}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Availability Table on Card */}
                     {getAvailability(app) && (
                       <div className="pt-2 border-t">
