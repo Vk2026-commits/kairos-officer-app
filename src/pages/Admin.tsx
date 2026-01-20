@@ -132,123 +132,136 @@ export default function Admin() {
             {applications.map((app) => (
               <Card key={app.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-semibold text-lg">
-                          {app.first_name} {app.middle_name || ""} {app.last_name}
-                        </span>
-                        {app.desired_position && (
-                          <Badge variant="secondary">{app.desired_position}</Badge>
-                        )}
+                  <div className="flex flex-col gap-4">
+                    {/* Header Row */}
+                    <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 text-muted-foreground" />
+                          <span className="font-semibold text-lg">
+                            {app.first_name} {app.middle_name || ""} {app.last_name}
+                          </span>
+                          {app.desired_position && (
+                            <Badge variant="secondary">{app.desired_position}</Badge>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                          {app.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="w-3 h-3" /> {app.email}
+                            </span>
+                          )}
+                          {app.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="w-3 h-3" /> {app.phone}
+                            </span>
+                          )}
+                          {app.city && app.state && (
+                            <span className="flex items-center gap-1">
+                              <MapPin className="w-3 h-3" /> {app.city}, {app.state}
+                            </span>
+                          )}
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            {format(new Date(app.created_at), "MMM d, yyyy 'at' h:mm a")}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                        {app.email && (
-                          <span className="flex items-center gap-1">
-                            <Mail className="w-3 h-3" /> {app.email}
-                          </span>
-                        )}
-                        {app.phone && (
-                          <span className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" /> {app.phone}
-                          </span>
-                        )}
-                        {app.city && app.state && (
-                          <span className="flex items-center gap-1">
-                            <MapPin className="w-3 h-3" /> {app.city}, {app.state}
-                          </span>
-                        )}
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-3 h-3" />
-                          {format(new Date(app.created_at), "MMM d, yyyy 'at' h:mm a")}
-                        </span>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => generateApplicationPDF(app)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Full Application
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => generateW4PDF(app)}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Form W-4
+                        </Button>
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Eye className="w-4 h-4 mr-2" />
+                              View Details
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-3xl max-h-[90vh]">
+                            <DialogHeader>
+                              <DialogTitle>
+                                Application: {app.first_name} {app.last_name}
+                              </DialogTitle>
+                            </DialogHeader>
+                            <ScrollArea className="max-h-[70vh] pr-4">
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4 text-sm">
+                                  <div>
+                                    <span className="font-medium">Application ID:</span>
+                                    <p className="text-muted-foreground text-xs font-mono">{app.id}</p>
+                                  </div>
+                                  <div>
+                                    <span className="font-medium">Submitted:</span>
+                                    <p className="text-muted-foreground">
+                                      {format(new Date(app.created_at), "MMMM d, yyyy 'at' h:mm a")}
+                                    </p>
+                                  </div>
+                                </div>
+                                
+                                {/* Availability Table in Dialog */}
+                                {app.availability && Object.keys(app.availability).length > 0 && (
+                                  <AvailabilityTable 
+                                    availability={app.availability} 
+                                    title="Weekly Availability"
+                                  />
+                                )}
+                                
+                                <div className="border rounded-lg overflow-hidden">
+                                  <table className="w-full text-sm">
+                                    <thead className="bg-muted">
+                                      <tr>
+                                        <th className="text-left p-3 font-medium">Field</th>
+                                        <th className="text-left p-3 font-medium">Value</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {Object.entries(app.full_form_data || {}).map(([key, value], idx) => (
+                                        <tr key={key} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+                                          <td className="p-3 font-medium border-t">{formatFieldName(key)}</td>
+                                          <td className="p-3 border-t">
+                                            {typeof value === "object" ? (
+                                              <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                                                {JSON.stringify(value, null, 2)}
+                                              </pre>
+                                            ) : (
+                                              renderValue(value)
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            </ScrollArea>
+                          </DialogContent>
+                        </Dialog>
                       </div>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => generateApplicationPDF(app)}
-                      >
-                        <Download className="w-4 h-4 mr-2" />
-                        Full Application
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => generateW4PDF(app)}
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        Form W-4
-                      </Button>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Details
-                          </Button>
-                        </DialogTrigger>
-                      <DialogContent className="max-w-3xl max-h-[90vh]">
-                        <DialogHeader>
-                          <DialogTitle>
-                            Application: {app.first_name} {app.last_name}
-                          </DialogTitle>
-                        </DialogHeader>
-                        <ScrollArea className="max-h-[70vh] pr-4">
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4 text-sm">
-                              <div>
-                                <span className="font-medium">Application ID:</span>
-                                <p className="text-muted-foreground text-xs font-mono">{app.id}</p>
-                              </div>
-                              <div>
-                                <span className="font-medium">Submitted:</span>
-                                <p className="text-muted-foreground">
-                                  {format(new Date(app.created_at), "MMMM d, yyyy 'at' h:mm a")}
-                                </p>
-                              </div>
-                            </div>
-                            
-                            {/* Availability Table */}
-                            {app.availability && Object.keys(app.availability).length > 0 && (
-                              <AvailabilityTable 
-                                availability={app.availability} 
-                                title="Weekly Availability"
-                              />
-                            )}
-                            
-                            <div className="border rounded-lg overflow-hidden">
-                              <table className="w-full text-sm">
-                                <thead className="bg-muted">
-                                  <tr>
-                                    <th className="text-left p-3 font-medium">Field</th>
-                                    <th className="text-left p-3 font-medium">Value</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {Object.entries(app.full_form_data || {}).map(([key, value], idx) => (
-                                    <tr key={key} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
-                                      <td className="p-3 font-medium border-t">{formatFieldName(key)}</td>
-                                      <td className="p-3 border-t">
-                                        {typeof value === "object" ? (
-                                          <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
-                                            {JSON.stringify(value, null, 2)}
-                                          </pre>
-                                        ) : (
-                                          renderValue(value)
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </ScrollArea>
-                      </DialogContent>
-                    </Dialog>
-                    </div>
+                    
+                    {/* Availability Table on Card */}
+                    {app.availability && Object.keys(app.availability).length > 0 && (
+                      <div className="pt-2 border-t">
+                        <AvailabilityTable 
+                          availability={app.availability} 
+                          title="Weekly Availability"
+                        />
+                      </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
