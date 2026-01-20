@@ -10,6 +10,14 @@ import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText } fr
 import { format } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
+import { AvailabilityTable } from "@/components/AvailabilityTable";
+
+interface AvailabilityData {
+  [key: string]: {
+    from?: string;
+    to?: string;
+  };
+}
 
 interface Application {
   id: string;
@@ -26,6 +34,7 @@ interface Application {
   desired_position?: string;
   created_at: string;
   full_form_data: Record<string, unknown>;
+  availability?: AvailabilityData;
 }
 
 export default function Admin() {
@@ -200,6 +209,15 @@ export default function Admin() {
                                 </p>
                               </div>
                             </div>
+                            
+                            {/* Availability Table */}
+                            {app.availability && Object.keys(app.availability).length > 0 && (
+                              <AvailabilityTable 
+                                availability={app.availability} 
+                                title="Weekly Availability"
+                              />
+                            )}
+                            
                             <div className="border rounded-lg overflow-hidden">
                               <table className="w-full text-sm">
                                 <thead className="bg-muted">
