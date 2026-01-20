@@ -80,6 +80,38 @@ export default function Admin() {
     return String(value);
   };
 
+  // Extract availability from either the availability column or full_form_data
+  const getAvailability = (app: Application): AvailabilityData | null => {
+    // First check if availability column has data
+    if (app.availability && Object.keys(app.availability).length > 0) {
+      const hasData = Object.values(app.availability).some(
+        (day) => day?.from || day?.to
+      );
+      if (hasData) return app.availability;
+    }
+    
+    // Fallback: extract from full_form_data
+    const formData = app.full_form_data;
+    if (!formData) return null;
+    
+    const availability: AvailabilityData = {
+      monday: { from: formData.mondayFrom as string, to: formData.mondayTo as string },
+      tuesday: { from: formData.tuesdayFrom as string, to: formData.tuesdayTo as string },
+      wednesday: { from: formData.wednesdayFrom as string, to: formData.wednesdayTo as string },
+      thursday: { from: formData.thursdayFrom as string, to: formData.thursdayTo as string },
+      friday: { from: formData.fridayFrom as string, to: formData.fridayTo as string },
+      saturday: { from: formData.saturdayFrom as string, to: formData.saturdayTo as string },
+      sunday: { from: formData.sundayFrom as string, to: formData.sundayTo as string },
+    };
+    
+    // Check if any day has data
+    const hasData = Object.values(availability).some(
+      (day) => day?.from || day?.to
+    );
+    
+    return hasData ? availability : null;
+  };
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -213,9 +245,9 @@ export default function Admin() {
                                 </div>
                                 
                                 {/* Availability Table in Dialog */}
-                                {app.availability && Object.keys(app.availability).length > 0 && (
+                                {getAvailability(app) && (
                                   <AvailabilityTable 
-                                    availability={app.availability} 
+                                    availability={getAvailability(app)!} 
                                     title="Weekly Availability"
                                   />
                                 )}
@@ -254,10 +286,10 @@ export default function Admin() {
                     </div>
                     
                     {/* Availability Table on Card */}
-                    {app.availability && Object.keys(app.availability).length > 0 && (
+                    {getAvailability(app) && (
                       <div className="pt-2 border-t">
                         <AvailabilityTable 
-                          availability={app.availability} 
+                          availability={getAvailability(app)!} 
                           title="Weekly Availability"
                         />
                       </div>
