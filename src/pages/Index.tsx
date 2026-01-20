@@ -79,9 +79,17 @@ const Index = () => {
               </a>
             </div>
           </div>
-          <p className="text-center text-sm text-background/60 mt-4">
-            © 2026 Kairos Security. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-2 mt-4">
+            <p className="text-center text-sm text-background/60">
+              © 2026 Kairos Security. All rights reserved.
+            </p>
+            <a 
+              href="/admin" 
+              className="text-xs text-background/40 hover:text-background/60 transition-colors"
+            >
+              Admin
+            </a>
+          </div>
         </div>
       </footer>
     </div>
