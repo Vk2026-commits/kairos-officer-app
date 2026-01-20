@@ -196,6 +196,73 @@ const sectionTitles: Record<string, string> = {
   backgroundCheckConsent: "Background Check Consent",
 };
 
+const formatTime = (time?: string): string => {
+  if (!time) return "—";
+  const [hours, minutes] = time.split(":");
+  const hour = parseInt(hours, 10);
+  if (isNaN(hour)) return time;
+  const ampm = hour >= 12 ? "PM" : "AM";
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
+const drawAvailabilityTable = (
+  doc: jsPDF,
+  formData: Record<string, unknown>,
+  startY: number,
+  margin: number,
+  contentWidth: number,
+  title: string,
+  fromPrefix: string,
+  toPrefix: string
+): number => {
+  let yPos = startY;
+  const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+  const dayLabels = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+  
+  const colWidths = [contentWidth * 0.3, contentWidth * 0.35, contentWidth * 0.35];
+  const rowHeight = 8;
+  
+  // Table header
+  doc.setFillColor(220, 220, 220);
+  doc.rect(margin, yPos, contentWidth, rowHeight, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.text("Day", margin + 3, yPos + 5.5);
+  doc.text("From", margin + colWidths[0] + 3, yPos + 5.5);
+  doc.text("To", margin + colWidths[0] + colWidths[1] + 3, yPos + 5.5);
+  yPos += rowHeight;
+  
+  // Table rows
+  doc.setFont("helvetica", "normal");
+  days.forEach((day, idx) => {
+    const fromKey = `${fromPrefix}${day.charAt(0).toUpperCase() + day.slice(1)}From`;
+    const toKey = `${toPrefix}${day.charAt(0).toUpperCase() + day.slice(1)}To`;
+    const fromValue = formData[fromKey] as string | undefined;
+    const toValue = formData[toKey] as string | undefined;
+    
+    // Alternate row colors
+    if (idx % 2 === 0) {
+      doc.setFillColor(248, 248, 248);
+      doc.rect(margin, yPos, contentWidth, rowHeight, "F");
+    }
+    
+    // Draw cell borders
+    doc.setDrawColor(200);
+    doc.rect(margin, yPos, colWidths[0], rowHeight);
+    doc.rect(margin + colWidths[0], yPos, colWidths[1], rowHeight);
+    doc.rect(margin + colWidths[0] + colWidths[1], yPos, colWidths[2], rowHeight);
+    
+    doc.text(dayLabels[idx], margin + 3, yPos + 5.5);
+    doc.text(formatTime(fromValue), margin + colWidths[0] + 3, yPos + 5.5);
+    doc.text(formatTime(toValue), margin + colWidths[0] + colWidths[1] + 3, yPos + 5.5);
+    
+    yPos += rowHeight;
+  });
+  
+  return yPos;
+};
+
 export function generateApplicationPDF(application: Application): void {
   const doc = new jsPDF();
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -249,7 +316,24 @@ export function generateApplicationPDF(application: Application): void {
   const formData = application.full_form_data || {};
   const sections: Record<string, Array<{ key: string; value: unknown }>> = {};
   
+  // Fields to exclude from regular listing (will be shown in tables)
+  const availabilityFields = [
+    "mondayFrom", "mondayTo", "tuesdayFrom", "tuesdayTo", 
+    "wednesdayFrom", "wednesdayTo", "thursdayFrom", "thursdayTo",
+    "fridayFrom", "fridayTo", "saturdayFrom", "saturdayTo", "sundayFrom", "sundayTo"
+  ];
+  const scheduleFields = [
+    "scheduleMondayFrom", "scheduleMondayTo", "scheduleTuesdayFrom", "scheduleTuesdayTo",
+    "scheduleWednesdayFrom", "scheduleWednesdayTo", "scheduleThursdayFrom", "scheduleThursdayTo",
+    "scheduleFridayFrom", "scheduleFridayTo", "scheduleSaturdayFrom", "scheduleSaturdayTo",
+    "scheduleSundayFrom", "scheduleSundayTo"
+  ];
+  const tableFields = [...availabilityFields, ...scheduleFields];
+  
   Object.entries(formData).forEach(([key, value]) => {
+    // Skip fields that will be shown in availability tables
+    if (tableFields.includes(key)) return;
+    
     const section = sectionTitles[key] || "Other Information";
     if (!sections[section]) {
       sections[section] = [];
@@ -286,6 +370,82 @@ export function generateApplicationPDF(application: Application): void {
 
   sectionOrder.forEach((sectionName) => {
     const fields = sections[sectionName];
+    
+    // Special handling for availability section
+    if (sectionName === "Section 15: Employee Availability") {
+      addNewPageIfNeeded(80);
+      
+      // Section Header
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPos, contentWidth, 8, "F");
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(sectionName, margin + 3, yPos + 6);
+      yPos += 12;
+      
+      // Draw availability table
+      yPos = drawAvailabilityTable(doc, formData, yPos, margin, contentWidth, "Weekly Availability", "", "");
+      yPos += 8;
+      
+      // Add any other fields in this section
+      if (fields && fields.length > 0) {
+        doc.setFontSize(9);
+        fields.forEach(({ key, value }) => {
+          addNewPageIfNeeded(lineHeight);
+          const fieldName = formatFieldName(key);
+          const fieldValue = formatValue(value);
+          doc.setFont("helvetica", "bold");
+          doc.text(`${fieldName}:`, margin + 3, yPos);
+          doc.setFont("helvetica", "normal");
+          const lines = doc.splitTextToSize(fieldValue, contentWidth - 70);
+          doc.text(lines, margin + 70, yPos);
+          yPos += lineHeight * Math.max(1, lines.length);
+        });
+      }
+      yPos += 5;
+      return;
+    }
+    
+    // Special handling for work schedule section
+    if (sectionName === "Section 20: Work Schedule") {
+      addNewPageIfNeeded(80);
+      
+      // Section Header
+      doc.setFillColor(240, 240, 240);
+      doc.rect(margin, yPos, contentWidth, 8, "F");
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(sectionName, margin + 3, yPos + 6);
+      yPos += 12;
+      
+      // Add non-schedule fields first (like post address)
+      if (fields && fields.length > 0) {
+        doc.setFontSize(9);
+        fields.forEach(({ key, value }) => {
+          addNewPageIfNeeded(lineHeight);
+          const fieldName = formatFieldName(key);
+          const fieldValue = formatValue(value);
+          doc.setFont("helvetica", "bold");
+          doc.text(`${fieldName}:`, margin + 3, yPos);
+          doc.setFont("helvetica", "normal");
+          const lines = doc.splitTextToSize(fieldValue, contentWidth - 70);
+          doc.text(lines, margin + 70, yPos);
+          yPos += lineHeight * Math.max(1, lines.length);
+        });
+        yPos += 5;
+      }
+      
+      // Draw schedule table
+      addNewPageIfNeeded(70);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text("Weekly Schedule:", margin + 3, yPos);
+      yPos += 6;
+      yPos = drawAvailabilityTable(doc, formData, yPos, margin, contentWidth, "Weekly Schedule", "schedule", "schedule");
+      yPos += 8;
+      return;
+    }
+    
     if (!fields || fields.length === 0) return;
 
     addNewPageIfNeeded(25 + fields.length * lineHeight);
