@@ -341,7 +341,7 @@ const EmploymentApplication = () => {
       <header className="bg-background border-b border-border py-4">
         <div className="container mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <a href="/">
+            <a href="/onboarding-packet">
               <img src={kairosLogo} alt="Kairos Security" className="h-14 md:h-16 object-contain" />
             </a>
             <div className="flex flex-col md:flex-row items-center gap-4 text-sm">
