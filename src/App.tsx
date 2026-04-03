@@ -21,7 +21,7 @@ const App = () => (
           <Route path="/onboarding-packet" element={<Index />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/employment-application" element={<EmploymentApplication />} />
-          <Route path="/employment-admin" element={<EmploymentApplicationsAdmin />} />
+          
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
