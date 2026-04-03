@@ -120,7 +120,7 @@ export default function Admin() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Lock className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle>Admin Access</CardTitle>
+            <CardTitle>Admin Access - Onboarding Packets</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
@@ -145,7 +145,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Applications</h1>
+            <h1 className="text-3xl font-bold">Onboarding Packets</h1>
             <p className="text-muted-foreground">{applications.length} total submissions</p>
           </div>
           <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
