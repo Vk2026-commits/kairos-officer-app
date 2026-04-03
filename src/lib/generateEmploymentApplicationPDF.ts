@@ -154,11 +154,12 @@ export function generateEmploymentApplicationPDF(data: EmploymentAppData): void 
   y += 8;
 
   // Licenses row
-  doc.setFontSize(9);
+  doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
-  doc.text(`Level 2 License: ${check(data.level2License)}   Level 3 License: ${check(data.level3License)}   Level 4 License: ${check(data.level4License)}`, m, y);
-  doc.text(`Email: ${v(data.emailAddress)}`, pw / 2 + 10, y);
-  y += 6;
+  doc.text(`Level 2: ${check(data.level2License)}  Level 3: ${check(data.level3License)}  Level 4: ${check(data.level4License)}`, m, y);
+  y += 5;
+  drawField("Email", v(data.emailAddress), m, cw, y);
+  y += 8;
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "bold");
