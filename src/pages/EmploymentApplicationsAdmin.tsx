@@ -69,7 +69,7 @@ export default function EmploymentApplicationsAdmin() {
 
   const handleDownloadPDF = (app: EmploymentApplication) => {
     const formData = app.full_form_data as Record<string, any>;
-    generateEmploymentApplicationPDF(formData);
+    generateEmploymentApplicationPDF({ ...formData, firstName: app.first_name, lastName: app.last_name });
   };
 
   if (!isAuthenticated) {
