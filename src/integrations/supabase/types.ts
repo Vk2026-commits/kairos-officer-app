@@ -152,6 +152,168 @@ export type Database = {
         }
         Relationships: []
       }
+      employment_applications: {
+        Row: {
+          address: string | null
+          applied_before: boolean | null
+          applied_before_when: string | null
+          certification_acknowledged: boolean | null
+          city: string | null
+          contact_suggestion: string | null
+          convicted: boolean | null
+          conviction_details: string | null
+          created_at: string
+          date_of_birth: string | null
+          drivers_license_number: string | null
+          education: Json | null
+          eligible_to_work: boolean | null
+          email: string | null
+          employed_here_before: boolean | null
+          employed_here_when: string | null
+          employment_history: Json | null
+          employment_type: string | null
+          ever_fired: boolean | null
+          fired_details: string | null
+          first_name: string
+          full_form_data: Json
+          has_drivers_license: boolean | null
+          id: string
+          is_18_or_older: boolean | null
+          job_applied_for: string | null
+          last_name: string
+          level2_license: boolean | null
+          level3_license: boolean | null
+          level4_license: boolean | null
+          license_class: string | null
+          license_suspended: boolean | null
+          license_suspended_details: string | null
+          machines_equipment: string | null
+          middle_name: string | null
+          other_names: string | null
+          other_names_used: boolean | null
+          outside_employment: boolean | null
+          outside_employment_details: string | null
+          personal_references: Json | null
+          phone: string | null
+          presently_employed: boolean | null
+          professional_activities: string | null
+          signature_date: string | null
+          skills_training: string | null
+          ssn: string | null
+          start_date: string | null
+          state: string | null
+          state_licensed_in: string | null
+          todays_date: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          applied_before?: boolean | null
+          applied_before_when?: string | null
+          certification_acknowledged?: boolean | null
+          city?: string | null
+          contact_suggestion?: string | null
+          convicted?: boolean | null
+          conviction_details?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          drivers_license_number?: string | null
+          education?: Json | null
+          eligible_to_work?: boolean | null
+          email?: string | null
+          employed_here_before?: boolean | null
+          employed_here_when?: string | null
+          employment_history?: Json | null
+          employment_type?: string | null
+          ever_fired?: boolean | null
+          fired_details?: string | null
+          first_name: string
+          full_form_data: Json
+          has_drivers_license?: boolean | null
+          id?: string
+          is_18_or_older?: boolean | null
+          job_applied_for?: string | null
+          last_name: string
+          level2_license?: boolean | null
+          level3_license?: boolean | null
+          level4_license?: boolean | null
+          license_class?: string | null
+          license_suspended?: boolean | null
+          license_suspended_details?: string | null
+          machines_equipment?: string | null
+          middle_name?: string | null
+          other_names?: string | null
+          other_names_used?: boolean | null
+          outside_employment?: boolean | null
+          outside_employment_details?: string | null
+          personal_references?: Json | null
+          phone?: string | null
+          presently_employed?: boolean | null
+          professional_activities?: string | null
+          signature_date?: string | null
+          skills_training?: string | null
+          ssn?: string | null
+          start_date?: string | null
+          state?: string | null
+          state_licensed_in?: string | null
+          todays_date?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          applied_before?: boolean | null
+          applied_before_when?: string | null
+          certification_acknowledged?: boolean | null
+          city?: string | null
+          contact_suggestion?: string | null
+          convicted?: boolean | null
+          conviction_details?: string | null
+          created_at?: string
+          date_of_birth?: string | null
+          drivers_license_number?: string | null
+          education?: Json | null
+          eligible_to_work?: boolean | null
+          email?: string | null
+          employed_here_before?: boolean | null
+          employed_here_when?: string | null
+          employment_history?: Json | null
+          employment_type?: string | null
+          ever_fired?: boolean | null
+          fired_details?: string | null
+          first_name?: string
+          full_form_data?: Json
+          has_drivers_license?: boolean | null
+          id?: string
+          is_18_or_older?: boolean | null
+          job_applied_for?: string | null
+          last_name?: string
+          level2_license?: boolean | null
+          level3_license?: boolean | null
+          level4_license?: boolean | null
+          license_class?: string | null
+          license_suspended?: boolean | null
+          license_suspended_details?: string | null
+          machines_equipment?: string | null
+          middle_name?: string | null
+          other_names?: string | null
+          other_names_used?: boolean | null
+          outside_employment?: boolean | null
+          outside_employment_details?: string | null
+          personal_references?: Json | null
+          phone?: string | null
+          presently_employed?: boolean | null
+          professional_activities?: string | null
+          signature_date?: string | null
+          skills_training?: string | null
+          ssn?: string | null
+          start_date?: string | null
+          state?: string | null
+          state_licensed_in?: string | null
+          todays_date?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

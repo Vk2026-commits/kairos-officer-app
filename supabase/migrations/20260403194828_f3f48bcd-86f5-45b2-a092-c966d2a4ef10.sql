@@ -1,0 +1,61 @@
+CREATE TABLE public.employment_applications (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  first_name text NOT NULL,
+  last_name text NOT NULL,
+  middle_name text,
+  email text,
+  phone text,
+  address text,
+  city text,
+  state text,
+  zip_code text,
+  ssn text,
+  date_of_birth text,
+  job_applied_for text,
+  todays_date text,
+  employment_type text,
+  start_date text,
+  level2_license boolean DEFAULT false,
+  level3_license boolean DEFAULT false,
+  level4_license boolean DEFAULT false,
+  is_18_or_older boolean,
+  eligible_to_work boolean,
+  applied_before boolean,
+  applied_before_when text,
+  employed_here_before boolean,
+  employed_here_when text,
+  convicted boolean,
+  conviction_details text,
+  outside_employment boolean,
+  outside_employment_details text,
+  has_drivers_license boolean,
+  drivers_license_number text,
+  license_class text,
+  state_licensed_in text,
+  license_suspended boolean,
+  license_suspended_details text,
+  professional_activities text,
+  skills_training text,
+  machines_equipment text,
+  education jsonb DEFAULT '{}'::jsonb,
+  employment_history jsonb DEFAULT '[]'::jsonb,
+  other_names_used boolean,
+  other_names text,
+  presently_employed boolean,
+  contact_suggestion text,
+  ever_fired boolean,
+  fired_details text,
+  personal_references jsonb DEFAULT '[]'::jsonb,
+  certification_acknowledged boolean DEFAULT false,
+  signature_date text,
+  full_form_data jsonb NOT NULL
+);
+
+ALTER TABLE public.employment_applications ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Anyone can submit employment applications"
+ON public.employment_applications
+FOR INSERT
+TO anon, authenticated
+WITH CHECK (true);
