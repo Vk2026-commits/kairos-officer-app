@@ -38,10 +38,10 @@ const Index = () => {
       <section className="bg-foreground text-background py-12 md:py-16">
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-2xl md:text-4xl font-display font-bold mb-3">
-            Security Officer Application
+            Security Officer Onboarding Packet
           </h1>
           <p className="text-base md:text-lg text-background/80 max-w-xl mx-auto">
-            Join our elite team of security professionals. Complete your application below.
+            Welcome to the team! Please complete your onboarding paperwork below.
           </p>
         </div>
       </section>
