@@ -145,7 +145,7 @@ export default function Admin() {
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold">Applications</h1>
+            <h1 className="text-3xl font-bold">Onboarding Packets</h1>
             <p className="text-muted-foreground">{applications.length} total submissions</p>
           </div>
           <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
