@@ -517,5 +517,13 @@ export function generateEmploymentApplicationPDF(data: EmploymentAppData): void 
   doc.text(v(data.todaysDate), pw - m - 40, y - 2);
 
   const fileName = `Employment_Application_${data.lastName}_${data.firstName}.pdf`;
-  doc.save(fileName);
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
