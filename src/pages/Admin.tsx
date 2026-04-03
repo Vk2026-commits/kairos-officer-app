@@ -120,7 +120,7 @@ export default function Admin() {
             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
               <Lock className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle>Admin Access</CardTitle>
+            <CardTitle>Admin Access - Onboarding Packets</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input

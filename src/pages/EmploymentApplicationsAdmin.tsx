@@ -110,7 +110,7 @@ export default function EmploymentApplicationsAdmin() {
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={() => window.location.href = "/admin"}>
-              Security Applications
+              Onboarding Packets
             </Button>
             <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
               Logout
