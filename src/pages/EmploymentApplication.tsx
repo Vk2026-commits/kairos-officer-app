@@ -264,7 +264,7 @@ const EmploymentApplication = () => {
           <CardContent className="p-8 text-center space-y-4">
             <h2 className="text-2xl font-bold text-foreground">Application Submitted!</h2>
             <p className="text-muted-foreground">Thank you for your application. We will review it and contact you if your qualifications match our requirements.</p>
-            <Button onClick={() => window.location.href = "/"}>Return Home</Button>
+            <Button onClick={() => window.location.href = "/onboarding-packet"}>Return Home</Button>
           </CardContent>
         </Card>
       </div>
