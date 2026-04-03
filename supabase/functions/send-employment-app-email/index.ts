@@ -70,7 +70,7 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Kairos Security Applications <applications@hiring.kairossecurity.com>",
-        to: ["info@vektiss.com"],
+        to: ["info@kairossecurity.com"],
         subject: `New Employment Application: ${data.firstName} ${data.lastName} - ${data.jobAppliedFor || "General"}`,
         html: emailHtml,
       }),

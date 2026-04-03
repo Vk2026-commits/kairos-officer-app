@@ -41,9 +41,19 @@ const handler = async (req: Request): Promise<Response> => {
       throw error;
     }
 
-    console.log(`Fetched ${applications?.length || 0} applications`);
+    const { data: employmentApplications, error: empError } = await supabase
+      .from("employment_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    return new Response(JSON.stringify({ applications }), {
+    if (empError) {
+      console.error("Error fetching employment applications:", empError);
+      throw empError;
+    }
+
+    console.log(`Fetched ${applications?.length || 0} applications, ${employmentApplications?.length || 0} employment applications`);
+
+    return new Response(JSON.stringify({ applications, employmentApplications }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
