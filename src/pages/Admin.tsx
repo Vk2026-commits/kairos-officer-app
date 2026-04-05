@@ -624,6 +624,16 @@ export default function Admin() {
               <span className="text-sm text-muted-foreground ml-2">
                 Showing {filteredCalls.length} of {retellCalls.length} calls
               </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshData}
+                disabled={refreshing}
+                className="ml-auto gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </Button>
             </div>
 
             {filteredCalls.length === 0 ? (
