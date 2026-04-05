@@ -61,11 +61,33 @@ interface EmploymentApplication {
   full_form_data: Record<string, unknown>;
 }
 
+interface RetellCall {
+  id: string;
+  call_id?: string;
+  caller_number?: string;
+  callee_number?: string;
+  call_status?: string;
+  call_type?: string;
+  direction?: string;
+  duration_ms?: number;
+  start_time?: string;
+  end_time?: string;
+  transcript?: string;
+  summary?: string;
+  sentiment?: string;
+  custom_data?: Record<string, unknown>;
+  recording_url?: string;
+  retell_agent_id?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+}
+
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [employmentApplications, setEmploymentApplications] = useState<EmploymentApplication[]>([]);
+  const [retellCalls, setRetellCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
