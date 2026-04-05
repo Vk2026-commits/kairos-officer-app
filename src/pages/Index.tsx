@@ -83,6 +83,22 @@ const Index = () => {
                 </CardContent>
               </Card>
             </Link>
+
+            <Link to="/admin" className="block">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="rounded-full bg-primary/10 p-3">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Admin Portal</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Access the admin dashboard to manage applications, view call logs, and oversee operations.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
         </div>
       </section>
