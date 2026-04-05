@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare } from "lucide-react";
-import { format } from "date-fns";
+import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
 import { generateEmploymentApplicationPDF } from "@/lib/generateEmploymentApplicationPDF";
@@ -95,6 +95,8 @@ interface RetellCall {
   created_at: string;
 }
 
+type CallFilter = "all" | "today" | "week" | "custom";
+
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -103,6 +105,45 @@ export default function Admin() {
   const [retellCalls, setRetellCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [callFilter, setCallFilter] = useState<CallFilter>("all");
+  const [customDate, setCustomDate] = useState("");
+
+  const normalizePhone = (phone?: string | null): string => {
+    if (!phone) return "";
+    return phone.replace(/\D/g, "").slice(-10);
+  };
+
+  const findMatchingApplication = (call: RetellCall): EmploymentApplication | undefined => {
+    const callerNorm = normalizePhone(call.caller_number);
+    if (!callerNorm) return undefined;
+    return employmentApplications.find(app => normalizePhone(app.phone) === callerNorm);
+  };
+
+  const filteredCalls = useMemo(() => {
+    const now = new Date();
+    return retellCalls.filter(call => {
+      const callDate = new Date(call.start_time || call.created_at);
+      switch (callFilter) {
+        case "today": {
+          const todayStart = startOfDay(now);
+          return callDate >= todayStart;
+        }
+        case "week": {
+          const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+          return callDate >= weekStart;
+        }
+        case "custom": {
+          if (!customDate) return true;
+          const selected = startOfDay(new Date(customDate));
+          const nextDay = new Date(selected);
+          nextDay.setDate(nextDay.getDate() + 1);
+          return callDate >= selected && callDate < nextDay;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [retellCalls, callFilter, customDate]);
 
   const handleLogin = async () => {
     setLoading(true);
@@ -207,7 +248,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="calls">
               <PhoneCall className="w-4 h-4 mr-1" />
-              Calls ({retellCalls.length})
+              Calls ({filteredCalls.length}{callFilter !== "all" ? `/${retellCalls.length}` : ""})
             </TabsTrigger>
           </TabsList>
 
@@ -510,17 +551,45 @@ export default function Admin() {
 
           {/* Calls Tab */}
           <TabsContent value="calls">
-            {retellCalls.length === 0 ? (
+            {/* Date Filters */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-sm font-medium text-muted-foreground mr-1">Filter:</span>
+              {(["all", "today", "week"] as CallFilter[]).map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={callFilter === f ? "default" : "outline"}
+                  onClick={() => { setCallFilter(f); setCustomDate(""); }}
+                >
+                  {f === "all" ? "All" : f === "today" ? "Today" : "This Week"}
+                </Button>
+              ))}
+              <Input
+                type="date"
+                className="w-auto h-8 text-sm"
+                value={customDate}
+                onChange={(e) => { setCustomDate(e.target.value); setCallFilter("custom"); }}
+                placeholder="Pick a date"
+              />
+              <span className="text-sm text-muted-foreground ml-2">
+                Showing {filteredCalls.length} of {retellCalls.length} calls
+              </span>
+            </div>
+
+            {filteredCalls.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  No calls recorded yet. Configure your Retell webhook to start receiving call data.
+                  {retellCalls.length === 0
+                    ? "No calls recorded yet. Configure your Retell webhook to start receiving call data."
+                    : "No calls match the selected filter."}
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
-                {retellCalls.map((call) => {
+                {filteredCalls.map((call) => {
                   const analysis = call.call_analysis || {};
                   const cost = call.call_cost as Record<string, unknown> || {};
+                  const matchedApp = findMatchingApplication(call);
                   const formatDuration = (ms?: number) => {
                     if (!ms) return "N/A";
                     const totalSec = Math.round(ms / 1000);
@@ -567,7 +636,79 @@ export default function Admin() {
                                 {(analysis as Record<string, unknown>).in_voicemail && (
                                   <Badge variant="outline">Voicemail</Badge>
                                 )}
+                                {matchedApp && (
+                                  <Badge variant="default" className="bg-green-600 hover:bg-green-700">
+                                    <Briefcase className="w-3 h-3 mr-1" />
+                                    Applied
+                                  </Badge>
+                                )}
                               </div>
+                              {matchedApp && (
+                                <div className="text-sm bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 p-2 rounded-lg flex items-center gap-2">
+                                  <Briefcase className="w-4 h-4 text-green-600" />
+                                  <span>
+                                    <span className="font-medium">{matchedApp.first_name} {matchedApp.last_name}</span> submitted an employment application
+                                    {matchedApp.job_applied_for && <> for <span className="font-medium">{matchedApp.job_applied_for}</span></>}
+                                    {" "}on {format(new Date(matchedApp.created_at), "MMM d, yyyy")}
+                                  </span>
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline" size="sm" className="ml-auto shrink-0">
+                                        <Eye className="w-3 h-3 mr-1" /> View Application
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-3xl max-h-[90vh]">
+                                      <DialogHeader>
+                                        <DialogTitle>
+                                          Employment Application: {matchedApp.first_name} {matchedApp.last_name}
+                                        </DialogTitle>
+                                      </DialogHeader>
+                                      <ScrollArea className="max-h-[70vh] pr-4">
+                                        <div className="space-y-4">
+                                          <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                              <span className="font-medium">Submitted:</span>
+                                              <p className="text-muted-foreground">
+                                                {format(new Date(matchedApp.created_at), "MMMM d, yyyy 'at' h:mm a")}
+                                              </p>
+                                            </div>
+                                            <div>
+                                              <span className="font-medium">Position:</span>
+                                              <p className="text-muted-foreground">{matchedApp.job_applied_for || "N/A"}</p>
+                                            </div>
+                                          </div>
+                                          <div className="border rounded-lg overflow-hidden">
+                                            <table className="w-full text-sm">
+                                              <thead className="bg-muted">
+                                                <tr>
+                                                  <th className="text-left p-3 font-medium">Field</th>
+                                                  <th className="text-left p-3 font-medium">Value</th>
+                                                </tr>
+                                              </thead>
+                                              <tbody>
+                                                {Object.entries(matchedApp.full_form_data || {}).map(([key, value], idx) => (
+                                                  <tr key={key} className={idx % 2 === 0 ? "bg-background" : "bg-muted/30"}>
+                                                    <td className="p-3 font-medium border-t">{formatFieldName(key)}</td>
+                                                    <td className="p-3 border-t">
+                                                      {typeof value === "object" ? (
+                                                        <pre className="text-xs bg-muted p-2 rounded overflow-x-auto">
+                                                          {JSON.stringify(value, null, 2)}
+                                                        </pre>
+                                                      ) : (
+                                                        renderValue(value)
+                                                      )}
+                                                    </td>
+                                                  </tr>
+                                                ))}
+                                              </tbody>
+                                            </table>
+                                          </div>
+                                        </div>
+                                      </ScrollArea>
+                                    </DialogContent>
+                                  </Dialog>
+                                </div>
+                              )}
                               <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                                 {call.callee_number && (
                                   <span className="flex items-center gap-1">
