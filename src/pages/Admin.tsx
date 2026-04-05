@@ -77,7 +77,20 @@ interface RetellCall {
   sentiment?: string;
   custom_data?: Record<string, unknown>;
   recording_url?: string;
+  recording_multi_channel_url?: string;
+  public_log_url?: string;
   retell_agent_id?: string;
+  agent_name?: string;
+  agent_version?: number;
+  disconnection_reason?: string;
+  transcript_object?: Array<Record<string, unknown>>;
+  call_analysis?: Record<string, unknown>;
+  call_cost?: Record<string, unknown>;
+  latency?: Record<string, unknown>;
+  retell_llm_dynamic_variables?: Record<string, unknown>;
+  collected_dynamic_variables?: Record<string, unknown>;
+  transfer_destination?: string;
+  event_type?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
 }
@@ -505,142 +518,351 @@ export default function Admin() {
               </Card>
             ) : (
               <div className="grid gap-4">
-                {retellCalls.map((call) => (
-                  <Card key={call.id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-4">
-                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <PhoneCall className="w-4 h-4 text-muted-foreground" />
-                              <span className="font-semibold text-lg">
-                                {call.caller_number || "Unknown Caller"}
-                              </span>
-                              {call.call_status && (
-                                <Badge variant={call.call_status === "ended" || call.call_status === "call_ended" ? "secondary" : "default"}>
-                                  {call.call_status.replace(/_/g, " ")}
-                                </Badge>
-                              )}
-                              {call.direction && (
-                                <Badge variant="outline" className="capitalize">{call.direction}</Badge>
-                              )}
-                              {call.sentiment && (
-                                <Badge variant={call.sentiment === "positive" ? "default" : call.sentiment === "negative" ? "destructive" : "secondary"}>
-                                  {call.sentiment}
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                              {call.callee_number && (
-                                <span className="flex items-center gap-1">
-                                  <Phone className="w-3 h-3" /> To: {call.callee_number}
+                {retellCalls.map((call) => {
+                  const analysis = call.call_analysis || {};
+                  const cost = call.call_cost as Record<string, unknown> || {};
+                  const formatDuration = (ms?: number) => {
+                    if (!ms) return "N/A";
+                    const totalSec = Math.round(ms / 1000);
+                    const min = Math.floor(totalSec / 60);
+                    const sec = totalSec % 60;
+                    return min > 0 ? `${min}m ${sec}s` : `${sec}s`;
+                  };
+
+                  return (
+                    <Card key={call.id} className="hover:shadow-md transition-shadow">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col gap-4">
+                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <PhoneCall className="w-4 h-4 text-muted-foreground" />
+                                <span className="font-semibold text-lg">
+                                  {call.caller_number || "Unknown Caller"}
                                 </span>
-                              )}
-                              {call.duration_ms && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="w-3 h-3" /> {Math.round(call.duration_ms / 1000)}s
-                                </span>
-                              )}
-                              <span className="flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {format(new Date(call.start_time || call.created_at), "MMM d, yyyy 'at' h:mm a")}
-                              </span>
-                            </div>
-                            {call.summary && (
-                              <div className="mt-2 text-sm bg-muted/30 p-3 rounded-lg">
-                                <span className="font-medium flex items-center gap-1 mb-1">
-                                  <MessageSquare className="w-3 h-3" /> Summary
-                                </span>
-                                <p className="text-muted-foreground">{call.summary}</p>
+                                {call.call_status && (
+                                  <Badge variant={call.call_status === "ended" || call.call_status === "registered" ? "secondary" : "default"}>
+                                    {call.call_status.replace(/_/g, " ")}
+                                  </Badge>
+                                )}
+                                {call.direction && (
+                                  <Badge variant="outline" className="capitalize">{call.direction}</Badge>
+                                )}
+                                {call.call_type && (
+                                  <Badge variant="outline">{call.call_type.replace(/_/g, " ")}</Badge>
+                                )}
+                                {(call.sentiment || (analysis as Record<string, unknown>).user_sentiment) && (
+                                  <Badge variant={
+                                    (call.sentiment || String((analysis as Record<string, unknown>).user_sentiment)).toLowerCase() === "positive" ? "default" :
+                                    (call.sentiment || String((analysis as Record<string, unknown>).user_sentiment)).toLowerCase() === "negative" ? "destructive" : "secondary"
+                                  }>
+                                    {call.sentiment || String((analysis as Record<string, unknown>).user_sentiment)}
+                                  </Badge>
+                                )}
+                                {(analysis as Record<string, unknown>).call_successful !== undefined && (
+                                  <Badge variant={(analysis as Record<string, unknown>).call_successful ? "default" : "destructive"}>
+                                    {(analysis as Record<string, unknown>).call_successful ? "Successful" : "Unsuccessful"}
+                                  </Badge>
+                                )}
+                                {(analysis as Record<string, unknown>).in_voicemail && (
+                                  <Badge variant="outline">Voicemail</Badge>
+                                )}
                               </div>
-                            )}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {call.recording_url && (
-                              <Button variant="secondary" size="sm" asChild>
-                                <a href={call.recording_url} target="_blank" rel="noopener noreferrer">
-                                  <Download className="w-4 h-4 mr-2" />
-                                  Recording
-                                </a>
-                              </Button>
-                            )}
-                            <Dialog>
-                              <DialogTrigger asChild>
-                                <Button variant="outline" size="sm">
-                                  <Eye className="w-4 h-4 mr-2" />
-                                  View Details
+                              <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                                {call.callee_number && (
+                                  <span className="flex items-center gap-1">
+                                    <Phone className="w-3 h-3" /> To: {call.callee_number}
+                                  </span>
+                                )}
+                                {call.agent_name && (
+                                  <span className="flex items-center gap-1">
+                                    <User className="w-3 h-3" /> Agent: {call.agent_name}
+                                  </span>
+                                )}
+                                {call.duration_ms && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="w-3 h-3" /> {formatDuration(call.duration_ms)}
+                                  </span>
+                                )}
+                                {call.disconnection_reason && (
+                                  <span className="flex items-center gap-1">
+                                    Ended: {call.disconnection_reason.replace(/_/g, " ")}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" />
+                                  {format(new Date(call.start_time || call.created_at), "MMM d, yyyy 'at' h:mm a")}
+                                </span>
+                              </div>
+                              {(call.summary || (analysis as Record<string, unknown>).call_summary) && (
+                                <div className="mt-2 text-sm bg-muted/30 p-3 rounded-lg">
+                                  <span className="font-medium flex items-center gap-1 mb-1">
+                                    <MessageSquare className="w-3 h-3" /> Summary
+                                  </span>
+                                  <p className="text-muted-foreground">{call.summary || String((analysis as Record<string, unknown>).call_summary)}</p>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-2">
+                              {call.recording_url && (
+                                <Button variant="secondary" size="sm" asChild>
+                                  <a href={call.recording_url} target="_blank" rel="noopener noreferrer">
+                                    <Download className="w-4 h-4 mr-2" />
+                                    Recording
+                                  </a>
                                 </Button>
-                              </DialogTrigger>
-                              <DialogContent className="max-w-3xl max-h-[90vh]">
-                                <DialogHeader>
-                                  <DialogTitle>
-                                    Call: {call.caller_number || "Unknown"} → {call.callee_number || "Unknown"}
-                                  </DialogTitle>
-                                </DialogHeader>
-                                <ScrollArea className="max-h-[70vh] pr-4">
-                                  <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                              )}
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm">
+                                    <Eye className="w-4 h-4 mr-2" />
+                                    View Details
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-4xl max-h-[90vh]">
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      Call: {call.caller_number || "Unknown"} → {call.callee_number || "Unknown"}
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <ScrollArea className="max-h-[70vh] pr-4">
+                                    <div className="space-y-6">
+                                      {/* Basic Info */}
                                       <div>
-                                        <span className="font-medium">Call ID:</span>
-                                        <p className="text-muted-foreground text-xs font-mono">{call.call_id || call.id}</p>
+                                        <h3 className="font-semibold mb-3">Call Information</h3>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Call ID</span>
+                                            <p className="text-xs font-mono mt-1">{call.call_id || call.id}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Status</span>
+                                            <p className="capitalize mt-1">{call.call_status?.replace(/_/g, " ") || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Type</span>
+                                            <p className="mt-1">{call.call_type?.replace(/_/g, " ") || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Direction</span>
+                                            <p className="capitalize mt-1">{call.direction || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Duration</span>
+                                            <p className="mt-1">{formatDuration(call.duration_ms)}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Disconnection</span>
+                                            <p className="mt-1">{call.disconnection_reason?.replace(/_/g, " ") || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">From</span>
+                                            <p className="mt-1">{call.caller_number || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">To</span>
+                                            <p className="mt-1">{call.callee_number || "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">Start</span>
+                                            <p className="mt-1">{call.start_time ? format(new Date(call.start_time), "MMM d, yyyy h:mm:ss a") : "N/A"}</p>
+                                          </div>
+                                          <div>
+                                            <span className="font-medium text-muted-foreground">End</span>
+                                            <p className="mt-1">{call.end_time ? format(new Date(call.end_time), "MMM d, yyyy h:mm:ss a") : "N/A"}</p>
+                                          </div>
+                                          {call.transfer_destination && (
+                                            <div>
+                                              <span className="font-medium text-muted-foreground">Transferred To</span>
+                                              <p className="mt-1">{call.transfer_destination}</p>
+                                            </div>
+                                          )}
+                                          {call.event_type && (
+                                            <div>
+                                              <span className="font-medium text-muted-foreground">Last Event</span>
+                                              <p className="mt-1">{call.event_type.replace(/_/g, " ")}</p>
+                                            </div>
+                                          )}
+                                        </div>
                                       </div>
-                                      <div>
-                                        <span className="font-medium">Status:</span>
-                                        <p className="text-muted-foreground capitalize">{call.call_status?.replace(/_/g, " ") || "N/A"}</p>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">Direction:</span>
-                                        <p className="text-muted-foreground capitalize">{call.direction || "N/A"}</p>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">Duration:</span>
-                                        <p className="text-muted-foreground">{call.duration_ms ? `${Math.round(call.duration_ms / 1000)}s` : "N/A"}</p>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">Start:</span>
-                                        <p className="text-muted-foreground">
-                                          {call.start_time ? format(new Date(call.start_time), "MMM d, yyyy h:mm:ss a") : "N/A"}
-                                        </p>
-                                      </div>
-                                      <div>
-                                        <span className="font-medium">End:</span>
-                                        <p className="text-muted-foreground">
-                                          {call.end_time ? format(new Date(call.end_time), "MMM d, yyyy h:mm:ss a") : "N/A"}
-                                        </p>
-                                      </div>
+
+                                      {/* Agent Info */}
+                                      {(call.agent_name || call.retell_agent_id) && (
+                                        <div>
+                                          <h3 className="font-semibold mb-3">Agent</h3>
+                                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                            {call.agent_name && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Name</span>
+                                                <p className="mt-1">{call.agent_name}</p>
+                                              </div>
+                                            )}
+                                            {call.retell_agent_id && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Agent ID</span>
+                                                <p className="text-xs font-mono mt-1">{call.retell_agent_id}</p>
+                                              </div>
+                                            )}
+                                            {call.agent_version !== undefined && call.agent_version !== null && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Version</span>
+                                                <p className="mt-1">v{call.agent_version}</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Call Analysis */}
+                                      {Object.keys(analysis).length > 0 && (
+                                        <div>
+                                          <h3 className="font-semibold mb-3">Call Analysis</h3>
+                                          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                                            {(analysis as Record<string, unknown>).call_summary && (
+                                              <div className="col-span-full">
+                                                <span className="font-medium text-muted-foreground">Summary</span>
+                                                <p className="mt-1 bg-muted/30 p-3 rounded-lg">{String((analysis as Record<string, unknown>).call_summary)}</p>
+                                              </div>
+                                            )}
+                                            {(analysis as Record<string, unknown>).user_sentiment && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Sentiment</span>
+                                                <p className="mt-1">{String((analysis as Record<string, unknown>).user_sentiment)}</p>
+                                              </div>
+                                            )}
+                                            {(analysis as Record<string, unknown>).call_successful !== undefined && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Successful</span>
+                                                <p className="mt-1">{(analysis as Record<string, unknown>).call_successful ? "Yes" : "No"}</p>
+                                              </div>
+                                            )}
+                                            {(analysis as Record<string, unknown>).in_voicemail !== undefined && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Voicemail</span>
+                                                <p className="mt-1">{(analysis as Record<string, unknown>).in_voicemail ? "Yes" : "No"}</p>
+                                              </div>
+                                            )}
+                                            {(analysis as Record<string, unknown>).custom_analysis_data && Object.keys((analysis as Record<string, unknown>).custom_analysis_data as object).length > 0 && (
+                                              <div className="col-span-full">
+                                                <span className="font-medium text-muted-foreground">Custom Analysis</span>
+                                                <pre className="mt-1 text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+                                                  {JSON.stringify((analysis as Record<string, unknown>).custom_analysis_data, null, 2)}
+                                                </pre>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Summary (fallback if not in analysis) */}
+                                      {call.summary && !((analysis as Record<string, unknown>).call_summary) && (
+                                        <div>
+                                          <h3 className="font-semibold mb-2">Summary</h3>
+                                          <p className="text-sm bg-muted/30 p-3 rounded-lg">{call.summary}</p>
+                                        </div>
+                                      )}
+
+                                      {/* Transcript */}
+                                      {call.transcript && (
+                                        <div>
+                                          <h3 className="font-semibold mb-2">Transcript</h3>
+                                          <pre className="text-sm bg-muted p-3 rounded-lg whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                            {call.transcript}
+                                          </pre>
+                                        </div>
+                                      )}
+
+                                      {/* Cost */}
+                                      {Object.keys(cost).length > 0 && (cost as Record<string, unknown>).combined_cost !== undefined && (
+                                        <div>
+                                          <h3 className="font-semibold mb-3">Cost</h3>
+                                          <div className="grid grid-cols-2 gap-4 text-sm">
+                                            <div>
+                                              <span className="font-medium text-muted-foreground">Total Cost</span>
+                                              <p className="mt-1">${Number((cost as Record<string, unknown>).combined_cost).toFixed(4)}</p>
+                                            </div>
+                                            {(cost as Record<string, unknown>).total_duration_seconds && (
+                                              <div>
+                                                <span className="font-medium text-muted-foreground">Billed Duration</span>
+                                                <p className="mt-1">{formatDuration(Number((cost as Record<string, unknown>).total_duration_seconds) * 1000)}</p>
+                                              </div>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Dynamic Variables */}
+                                      {call.retell_llm_dynamic_variables && Object.keys(call.retell_llm_dynamic_variables).length > 0 && (
+                                        <div>
+                                          <h3 className="font-semibold mb-2">Dynamic Variables (Input)</h3>
+                                          <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+                                            {JSON.stringify(call.retell_llm_dynamic_variables, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+
+                                      {call.collected_dynamic_variables && Object.keys(call.collected_dynamic_variables).length > 0 && (
+                                        <div>
+                                          <h3 className="font-semibold mb-2">Collected Variables (Output)</h3>
+                                          <pre className="text-xs bg-muted p-3 rounded-lg overflow-x-auto">
+                                            {JSON.stringify(call.collected_dynamic_variables, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+
+                                      {/* Latency */}
+                                      {call.latency && Object.keys(call.latency).length > 0 && (
+                                        <div>
+                                          <h3 className="font-semibold mb-3">Latency (ms)</h3>
+                                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                                            {Object.entries(call.latency).map(([key, val]) => {
+                                              const latencyVal = val as Record<string, unknown> | null;
+                                              if (!latencyVal || typeof latencyVal !== "object") return null;
+                                              return (
+                                                <div key={key} className="bg-muted/30 p-2 rounded">
+                                                  <span className="font-medium text-muted-foreground text-xs uppercase">{key.replace(/_/g, " ")}</span>
+                                                  <p className="mt-1">p50: {String(latencyVal.p50 ?? "–")} | p90: {String(latencyVal.p90 ?? "–")} | p99: {String(latencyVal.p99 ?? "–")}</p>
+                                                </div>
+                                              );
+                                            })}
+                                          </div>
+                                        </div>
+                                      )}
+
+                                      {/* Links */}
+                                      {(call.recording_url || call.recording_multi_channel_url || call.public_log_url) && (
+                                        <div>
+                                          <h3 className="font-semibold mb-3">Links</h3>
+                                          <div className="flex flex-wrap gap-2">
+                                            {call.recording_url && (
+                                              <Button variant="outline" size="sm" asChild>
+                                                <a href={call.recording_url} target="_blank" rel="noopener noreferrer">Recording</a>
+                                              </Button>
+                                            )}
+                                            {call.recording_multi_channel_url && (
+                                              <Button variant="outline" size="sm" asChild>
+                                                <a href={call.recording_multi_channel_url} target="_blank" rel="noopener noreferrer">Multi-Channel Recording</a>
+                                              </Button>
+                                            )}
+                                            {call.public_log_url && (
+                                              <Button variant="outline" size="sm" asChild>
+                                                <a href={call.public_log_url} target="_blank" rel="noopener noreferrer">Public Log</a>
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
-                                    {call.summary && (
-                                      <div>
-                                        <span className="font-medium">Summary:</span>
-                                        <p className="mt-1 text-sm bg-muted/30 p-3 rounded-lg">{call.summary}</p>
-                                      </div>
-                                    )}
-                                    {call.transcript && (
-                                      <div>
-                                        <span className="font-medium">Transcript:</span>
-                                        <pre className="mt-1 text-sm bg-muted p-3 rounded-lg whitespace-pre-wrap max-h-96 overflow-y-auto">
-                                          {call.transcript}
-                                        </pre>
-                                      </div>
-                                    )}
-                                    {call.sentiment && (
-                                      <div>
-                                        <span className="font-medium">Sentiment:</span>
-                                        <Badge className="ml-2" variant={call.sentiment === "positive" ? "default" : call.sentiment === "negative" ? "destructive" : "secondary"}>
-                                          {call.sentiment}
-                                        </Badge>
-                                      </div>
-                                    )}
-                                  </div>
-                                </ScrollArea>
-                              </DialogContent>
-                            </Dialog>
+                                  </ScrollArea>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
             )}
           </TabsContent>
