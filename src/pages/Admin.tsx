@@ -7,8 +7,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Filter, LinkIcon } from "lucide-react";
-import { format, startOfDay, startOfWeek, isAfter, subDays, subWeeks } from "date-fns";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare } from "lucide-react";
+import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
 import { generateEmploymentApplicationPDF } from "@/lib/generateEmploymentApplicationPDF";
