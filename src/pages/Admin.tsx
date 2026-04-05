@@ -648,7 +648,6 @@ export default function Admin() {
               <div className="grid gap-4">
                 {filteredCalls.map((call) => {
                   const analysis = call.call_analysis || {};
-                  const cost = call.call_cost as Record<string, unknown> || {};
                   const matchedApp = findMatchingApplication(call);
                   const formatDuration = (ms?: number) => {
                     if (!ms) return "N/A";
