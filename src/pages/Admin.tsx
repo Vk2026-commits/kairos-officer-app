@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check, RefreshCw } from "lucide-react";
 import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
@@ -154,6 +154,26 @@ export default function Admin() {
       }
     });
   }, [retellCalls, callFilter, customDate]);
+
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("get-applications", {
+        body: { password },
+      });
+      if (fnError) throw fnError;
+      if (data.error) throw new Error(data.error);
+      setApplications(data.applications || []);
+      setEmploymentApplications(data.employmentApplications || []);
+      setRetellCalls(data.retellCalls || []);
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   const handleLogin = async () => {
     setLoading(true);
@@ -604,6 +624,16 @@ export default function Admin() {
               <span className="text-sm text-muted-foreground ml-2">
                 Showing {filteredCalls.length} of {retellCalls.length} calls
               </span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={refreshData}
+                disabled={refreshing}
+                className="ml-auto gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
+                {refreshing ? "Refreshing..." : "Refresh"}
+              </Button>
             </div>
 
             {filteredCalls.length === 0 ? (
