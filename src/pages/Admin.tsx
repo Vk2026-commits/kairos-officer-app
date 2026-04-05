@@ -648,7 +648,6 @@ export default function Admin() {
               <div className="grid gap-4">
                 {filteredCalls.map((call) => {
                   const analysis = call.call_analysis || {};
-                  const cost = call.call_cost as Record<string, unknown> || {};
                   const matchedApp = findMatchingApplication(call);
                   const formatDuration = (ms?: number) => {
                     if (!ms) return "N/A";
@@ -973,24 +972,6 @@ export default function Admin() {
                                         </div>
                                       )}
 
-                                      {/* Cost */}
-                                      {Object.keys(cost).length > 0 && (cost as Record<string, unknown>).combined_cost !== undefined && (
-                                        <div>
-                                          <h3 className="font-semibold mb-3">Cost</h3>
-                                          <div className="grid grid-cols-2 gap-4 text-sm">
-                                            <div>
-                                              <span className="font-medium text-muted-foreground">Total Cost</span>
-                                              <p className="mt-1">${Number((cost as Record<string, unknown>).combined_cost).toFixed(4)}</p>
-                                            </div>
-                                            {(cost as Record<string, unknown>).total_duration_seconds && (
-                                              <div>
-                                                <span className="font-medium text-muted-foreground">Billed Duration</span>
-                                                <p className="mt-1">{formatDuration(Number((cost as Record<string, unknown>).total_duration_seconds) * 1000)}</p>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      )}
 
                                       {/* Dynamic Variables */}
                                       {call.retell_llm_dynamic_variables && Object.keys(call.retell_llm_dynamic_variables).length > 0 && (
