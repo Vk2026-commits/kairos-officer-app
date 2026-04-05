@@ -95,6 +95,8 @@ interface RetellCall {
   created_at: string;
 }
 
+type CallFilter = "all" | "today" | "week" | "custom";
+
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -103,6 +105,45 @@ export default function Admin() {
   const [retellCalls, setRetellCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [callFilter, setCallFilter] = useState<CallFilter>("all");
+  const [customDate, setCustomDate] = useState("");
+
+  const normalizePhone = (phone?: string | null): string => {
+    if (!phone) return "";
+    return phone.replace(/\D/g, "").slice(-10);
+  };
+
+  const findMatchingApplication = (call: RetellCall): EmploymentApplication | undefined => {
+    const callerNorm = normalizePhone(call.caller_number);
+    if (!callerNorm) return undefined;
+    return employmentApplications.find(app => normalizePhone(app.phone) === callerNorm);
+  };
+
+  const filteredCalls = useMemo(() => {
+    const now = new Date();
+    return retellCalls.filter(call => {
+      const callDate = new Date(call.start_time || call.created_at);
+      switch (callFilter) {
+        case "today": {
+          const todayStart = startOfDay(now);
+          return callDate >= todayStart;
+        }
+        case "week": {
+          const weekStart = startOfWeek(now, { weekStartsOn: 1 });
+          return callDate >= weekStart;
+        }
+        case "custom": {
+          if (!customDate) return true;
+          const selected = startOfDay(new Date(customDate));
+          const nextDay = new Date(selected);
+          nextDay.setDate(nextDay.getDate() + 1);
+          return callDate >= selected && callDate < nextDay;
+        }
+        default:
+          return true;
+      }
+    });
+  }, [retellCalls, callFilter, customDate]);
 
   const handleLogin = async () => {
     setLoading(true);
