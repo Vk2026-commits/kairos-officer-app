@@ -185,12 +185,16 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="onboarding" className="space-y-6">
-          <TabsList>
+           <TabsList>
             <TabsTrigger value="onboarding">
               Onboarding Packets ({applications.length})
             </TabsTrigger>
             <TabsTrigger value="employment">
               Employment Applications ({employmentApplications.length})
+            </TabsTrigger>
+            <TabsTrigger value="calls">
+              <PhoneCall className="w-4 h-4 mr-1" />
+              Calls ({retellCalls.length})
             </TabsTrigger>
           </TabsList>
 
