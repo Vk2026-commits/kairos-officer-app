@@ -241,11 +241,31 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-          <Button variant="outline" onClick={() => setIsAuthenticated(false)}>
-            Logout
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyLink("/onboarding-packet")}
+              className="gap-2"
+            >
+              {copiedLink === "/onboarding-packet" ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              {copiedLink === "/onboarding-packet" ? "Copied!" : "Copy Onboarding Link"}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => copyLink("/employment-application")}
+              className="gap-2"
+            >
+              {copiedLink === "/employment-application" ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              {copiedLink === "/employment-application" ? "Copied!" : "Copy Application Link"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setIsAuthenticated(false)}>
+              Logout
+            </Button>
+          </div>
         </div>
 
         <Tabs defaultValue="onboarding" className="space-y-6">
