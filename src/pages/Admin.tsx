@@ -107,6 +107,16 @@ export default function Admin() {
   const [error, setError] = useState("");
   const [callFilter, setCallFilter] = useState<CallFilter>("all");
   const [customDate, setCustomDate] = useState("");
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  const baseUrl = "https://apply.kairossecurity.com";
+
+  const copyLink = (path: string) => {
+    const url = `${baseUrl}${path}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(path);
+    setTimeout(() => setCopiedLink(null), 2000);
+  };
 
   const normalizePhone = (phone?: string | null): string => {
     if (!phone) return "";
