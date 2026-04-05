@@ -19,7 +19,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/onboarding-packet" element={<Index />} />
+          <Route path="/onboarding-packet" element={<OnboardingPacket />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/employment-application" element={<EmploymentApplication />} />
           
