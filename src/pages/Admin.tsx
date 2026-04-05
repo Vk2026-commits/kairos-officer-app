@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare } from "lucide-react";
 import { format } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
@@ -61,11 +61,33 @@ interface EmploymentApplication {
   full_form_data: Record<string, unknown>;
 }
 
+interface RetellCall {
+  id: string;
+  call_id?: string;
+  caller_number?: string;
+  callee_number?: string;
+  call_status?: string;
+  call_type?: string;
+  direction?: string;
+  duration_ms?: number;
+  start_time?: string;
+  end_time?: string;
+  transcript?: string;
+  summary?: string;
+  sentiment?: string;
+  custom_data?: Record<string, unknown>;
+  recording_url?: string;
+  retell_agent_id?: string;
+  metadata?: Record<string, unknown>;
+  created_at: string;
+}
+
 export default function Admin() {
   const [password, setPassword] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [applications, setApplications] = useState<Application[]>([]);
   const [employmentApplications, setEmploymentApplications] = useState<EmploymentApplication[]>([]);
+  const [retellCalls, setRetellCalls] = useState<RetellCall[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -80,6 +102,7 @@ export default function Admin() {
       if (data.error) throw new Error(data.error);
       setApplications(data.applications || []);
       setEmploymentApplications(data.employmentApplications || []);
+      setRetellCalls(data.retellCalls || []);
       setIsAuthenticated(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to authenticate");
@@ -162,12 +185,16 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="onboarding" className="space-y-6">
-          <TabsList>
+           <TabsList>
             <TabsTrigger value="onboarding">
               Onboarding Packets ({applications.length})
             </TabsTrigger>
             <TabsTrigger value="employment">
               Employment Applications ({employmentApplications.length})
+            </TabsTrigger>
+            <TabsTrigger value="calls">
+              <PhoneCall className="w-4 h-4 mr-1" />
+              Calls ({retellCalls.length})
             </TabsTrigger>
           </TabsList>
 
@@ -454,6 +481,156 @@ export default function Admin() {
                                         </tbody>
                                       </table>
                                     </div>
+                                  </div>
+                                </ScrollArea>
+                              </DialogContent>
+                            </Dialog>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Calls Tab */}
+          <TabsContent value="calls">
+            {retellCalls.length === 0 ? (
+              <Card>
+                <CardContent className="py-12 text-center text-muted-foreground">
+                  No calls recorded yet. Configure your Retell webhook to start receiving call data.
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4">
+                {retellCalls.map((call) => (
+                  <Card key={call.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex flex-col gap-4">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <PhoneCall className="w-4 h-4 text-muted-foreground" />
+                              <span className="font-semibold text-lg">
+                                {call.caller_number || "Unknown Caller"}
+                              </span>
+                              {call.call_status && (
+                                <Badge variant={call.call_status === "ended" || call.call_status === "call_ended" ? "secondary" : "default"}>
+                                  {call.call_status.replace(/_/g, " ")}
+                                </Badge>
+                              )}
+                              {call.direction && (
+                                <Badge variant="outline" className="capitalize">{call.direction}</Badge>
+                              )}
+                              {call.sentiment && (
+                                <Badge variant={call.sentiment === "positive" ? "default" : call.sentiment === "negative" ? "destructive" : "secondary"}>
+                                  {call.sentiment}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                              {call.callee_number && (
+                                <span className="flex items-center gap-1">
+                                  <Phone className="w-3 h-3" /> To: {call.callee_number}
+                                </span>
+                              )}
+                              {call.duration_ms && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" /> {Math.round(call.duration_ms / 1000)}s
+                                </span>
+                              )}
+                              <span className="flex items-center gap-1">
+                                <Calendar className="w-3 h-3" />
+                                {format(new Date(call.start_time || call.created_at), "MMM d, yyyy 'at' h:mm a")}
+                              </span>
+                            </div>
+                            {call.summary && (
+                              <div className="mt-2 text-sm bg-muted/30 p-3 rounded-lg">
+                                <span className="font-medium flex items-center gap-1 mb-1">
+                                  <MessageSquare className="w-3 h-3" /> Summary
+                                </span>
+                                <p className="text-muted-foreground">{call.summary}</p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {call.recording_url && (
+                              <Button variant="secondary" size="sm" asChild>
+                                <a href={call.recording_url} target="_blank" rel="noopener noreferrer">
+                                  <Download className="w-4 h-4 mr-2" />
+                                  Recording
+                                </a>
+                              </Button>
+                            )}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Eye className="w-4 h-4 mr-2" />
+                                  View Details
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-3xl max-h-[90vh]">
+                                <DialogHeader>
+                                  <DialogTitle>
+                                    Call: {call.caller_number || "Unknown"} → {call.callee_number || "Unknown"}
+                                  </DialogTitle>
+                                </DialogHeader>
+                                <ScrollArea className="max-h-[70vh] pr-4">
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4 text-sm">
+                                      <div>
+                                        <span className="font-medium">Call ID:</span>
+                                        <p className="text-muted-foreground text-xs font-mono">{call.call_id || call.id}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Status:</span>
+                                        <p className="text-muted-foreground capitalize">{call.call_status?.replace(/_/g, " ") || "N/A"}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Direction:</span>
+                                        <p className="text-muted-foreground capitalize">{call.direction || "N/A"}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Duration:</span>
+                                        <p className="text-muted-foreground">{call.duration_ms ? `${Math.round(call.duration_ms / 1000)}s` : "N/A"}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Start:</span>
+                                        <p className="text-muted-foreground">
+                                          {call.start_time ? format(new Date(call.start_time), "MMM d, yyyy h:mm:ss a") : "N/A"}
+                                        </p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">End:</span>
+                                        <p className="text-muted-foreground">
+                                          {call.end_time ? format(new Date(call.end_time), "MMM d, yyyy h:mm:ss a") : "N/A"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    {call.summary && (
+                                      <div>
+                                        <span className="font-medium">Summary:</span>
+                                        <p className="mt-1 text-sm bg-muted/30 p-3 rounded-lg">{call.summary}</p>
+                                      </div>
+                                    )}
+                                    {call.transcript && (
+                                      <div>
+                                        <span className="font-medium">Transcript:</span>
+                                        <pre className="mt-1 text-sm bg-muted p-3 rounded-lg whitespace-pre-wrap max-h-96 overflow-y-auto">
+                                          {call.transcript}
+                                        </pre>
+                                      </div>
+                                    )}
+                                    {call.sentiment && (
+                                      <div>
+                                        <span className="font-medium">Sentiment:</span>
+                                        <Badge className="ml-2" variant={call.sentiment === "positive" ? "default" : call.sentiment === "negative" ? "destructive" : "secondary"}>
+                                          {call.sentiment}
+                                        </Badge>
+                                      </div>
+                                    )}
                                   </div>
                                 </ScrollArea>
                               </DialogContent>

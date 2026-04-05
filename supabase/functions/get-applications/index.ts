@@ -51,9 +51,19 @@ const handler = async (req: Request): Promise<Response> => {
       throw empError;
     }
 
-    console.log(`Fetched ${applications?.length || 0} applications, ${employmentApplications?.length || 0} employment applications`);
+    const { data: retellCalls, error: callsError } = await supabase
+      .from("retell_calls")
+      .select("*")
+      .order("created_at", { ascending: false });
 
-    return new Response(JSON.stringify({ applications, employmentApplications }), {
+    if (callsError) {
+      console.error("Error fetching retell calls:", callsError);
+      throw callsError;
+    }
+
+    console.log(`Fetched ${applications?.length || 0} applications, ${employmentApplications?.length || 0} employment applications, ${retellCalls?.length || 0} calls`);
+
+    return new Response(JSON.stringify({ applications, employmentApplications, retellCalls }), {
       status: 200,
       headers: { "Content-Type": "application/json", ...corsHeaders },
     });
