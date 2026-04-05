@@ -77,7 +77,20 @@ interface RetellCall {
   sentiment?: string;
   custom_data?: Record<string, unknown>;
   recording_url?: string;
+  recording_multi_channel_url?: string;
+  public_log_url?: string;
   retell_agent_id?: string;
+  agent_name?: string;
+  agent_version?: number;
+  disconnection_reason?: string;
+  transcript_object?: Array<Record<string, unknown>>;
+  call_analysis?: Record<string, unknown>;
+  call_cost?: Record<string, unknown>;
+  latency?: Record<string, unknown>;
+  retell_llm_dynamic_variables?: Record<string, unknown>;
+  collected_dynamic_variables?: Record<string, unknown>;
+  transfer_destination?: string;
+  event_type?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
 }
