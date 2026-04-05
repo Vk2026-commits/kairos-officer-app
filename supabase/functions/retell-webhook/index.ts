@@ -71,15 +71,54 @@ const handler = async (req: Request): Promise<Response> => {
     };
 
     if (record.call_id) {
-      const { error } = await supabase
+      // Fetch existing record to merge instead of overwrite
+      const { data: existing } = await supabase
         .from("retell_calls")
-        .upsert(record, { onConflict: "call_id" });
+        .select("*")
+        .eq("call_id", record.call_id)
+        .maybeSingle();
 
-      if (error) {
-        console.error("Error saving call data:", error);
-        throw error;
+      if (existing) {
+        // Merge: only overwrite fields that have meaningful new values
+        const merged: Record<string, unknown> = { ...record };
+        for (const [key, value] of Object.entries(merged)) {
+          const isEmpty = value === null || value === "" ||
+            (typeof value === "object" && value !== null && Object.keys(value as object).length === 0) ||
+            (Array.isArray(value) && (value as unknown[]).length === 0);
+          const existingVal = (existing as Record<string, unknown>)[key];
+          const existingHasValue = existingVal !== null && existingVal !== "" &&
+            !(typeof existingVal === "object" && existingVal !== null && !Array.isArray(existingVal) && Object.keys(existingVal as object).length === 0) &&
+            !(Array.isArray(existingVal) && (existingVal as unknown[]).length === 0);
+          if (isEmpty && existingHasValue) {
+            merged[key] = existingVal;
+          }
+        }
+        // Merge metadata objects
+        if (typeof existing.metadata === "object" && existing.metadata && typeof merged.metadata === "object" && merged.metadata) {
+          merged.metadata = { ...(existing.metadata as Record<string, unknown>), ...(merged.metadata as Record<string, unknown>) };
+        }
+
+        const { error } = await supabase
+          .from("retell_calls")
+          .update(merged)
+          .eq("call_id", record.call_id);
+
+        if (error) {
+          console.error("Error updating call data:", error);
+          throw error;
+        }
+        console.log(`Call ${record.call_id} merged/updated (event: ${event})`);
+      } else {
+        const { error } = await supabase
+          .from("retell_calls")
+          .insert(record);
+
+        if (error) {
+          console.error("Error inserting call data:", error);
+          throw error;
+        }
+        console.log(`Call ${record.call_id} inserted (event: ${event})`);
       }
-      console.log(`Call ${record.call_id} saved/updated (event: ${event})`);
     } else {
       const { error } = await supabase
         .from("retell_calls")
