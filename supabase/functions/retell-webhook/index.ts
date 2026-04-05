@@ -4,7 +4,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+    "authorization, x-client-info, apikey, content-type, x-retell-signature",
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -14,42 +14,62 @@ const handler = async (req: Request): Promise<Response> => {
 
   try {
     const payload = await req.json();
-    console.log("Retell webhook received:", JSON.stringify(payload).substring(0, 500));
+    console.log("Retell webhook received event:", payload.event);
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Retell sends different event types - handle call data
     const event = payload.event;
-    const callData = payload.call || payload.data || payload;
+    const call = payload.call || {};
 
-    // Build the record from Retell's payload
     const record: Record<string, unknown> = {
-      call_id: callData.call_id || callData.id || null,
-      caller_number: callData.from_number || callData.caller_number || null,
-      callee_number: callData.to_number || callData.callee_number || null,
-      call_status: callData.call_status || callData.status || event || null,
-      call_type: callData.call_type || null,
-      direction: callData.direction || null,
-      duration_ms: callData.duration_ms || callData.call_duration_ms || null,
-      start_time: callData.start_timestamp ? new Date(callData.start_timestamp).toISOString() : null,
-      end_time: callData.end_timestamp ? new Date(callData.end_timestamp).toISOString() : null,
-      transcript: callData.transcript || null,
-      summary: callData.call_summary || callData.summary || null,
-      sentiment: callData.user_sentiment || callData.sentiment || null,
-      custom_data: callData.metadata || callData.custom_data || {},
-      recording_url: callData.recording_url || null,
-      retell_agent_id: callData.agent_id || null,
+      call_id: call.call_id || null,
+      event_type: event,
+      call_type: call.call_type || null,
+      call_status: call.call_status || null,
+      direction: call.direction || null,
+      caller_number: call.from_number || null,
+      callee_number: call.to_number || null,
+      retell_agent_id: call.agent_id || null,
+      agent_name: call.agent_name || null,
+      agent_version: call.agent_version ?? null,
+      duration_ms: call.duration_ms ?? null,
+      start_time: call.start_timestamp ? new Date(call.start_timestamp).toISOString() : null,
+      end_time: call.end_timestamp ? new Date(call.end_timestamp).toISOString() : null,
+      disconnection_reason: call.disconnection_reason || null,
+      transcript: call.transcript || null,
+      transcript_object: call.transcript_object || [],
+      transcript_with_tool_calls: call.transcript_with_tool_calls || [],
+      recording_url: call.recording_url || null,
+      recording_multi_channel_url: call.recording_multi_channel_url || null,
+      public_log_url: call.public_log_url || null,
+      call_analysis: call.call_analysis || {},
+      call_cost: call.call_cost || {},
+      latency: call.latency || {},
+      retell_llm_dynamic_variables: call.retell_llm_dynamic_variables || {},
+      collected_dynamic_variables: call.collected_dynamic_variables || {},
+      transfer_destination: typeof call.transfer_destination === "string"
+        ? call.transfer_destination
+        : call.transfer_destination?.number || null,
+      opt_out_sensitive_data_storage: call.opt_out_sensitive_data_storage ?? false,
+      // Extract analysis fields into top-level columns for easy querying
+      summary: call.call_analysis?.call_summary || call.call_summary || null,
+      sentiment: call.call_analysis?.user_sentiment || call.user_sentiment || null,
+      custom_data: call.metadata || {},
       metadata: {
         event_type: event,
-        raw_payload: payload,
-        disconnection_reason: callData.disconnection_reason || null,
-        call_analysis: callData.call_analysis || null,
+        event_timestamp: payload.event_timestamp,
+        scrubbed_recording_url: call.scrubbed_recording_url || null,
+        scrubbed_recording_multi_channel_url: call.scrubbed_recording_multi_channel_url || null,
+        knowledge_base_retrieved_contents_url: call.knowledge_base_retrieved_contents_url || null,
+        custom_sip_headers: call.custom_sip_headers || null,
+        data_storage_setting: call.data_storage_setting || null,
+        transfer_end_timestamp: call.transfer_end_timestamp || null,
+        scrubbed_transcript_with_tool_calls: call.scrubbed_transcript_with_tool_calls || null,
       },
     };
 
-    // Upsert by call_id so we always have the latest state
     if (record.call_id) {
       const { error } = await supabase
         .from("retell_calls")
@@ -59,9 +79,8 @@ const handler = async (req: Request): Promise<Response> => {
         console.error("Error saving call data:", error);
         throw error;
       }
-      console.log(`Call ${record.call_id} saved/updated successfully`);
+      console.log(`Call ${record.call_id} saved/updated (event: ${event})`);
     } else {
-      // No call_id, just insert
       const { error } = await supabase
         .from("retell_calls")
         .insert(record);
