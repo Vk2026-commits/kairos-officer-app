@@ -248,7 +248,7 @@ export default function Admin() {
             </TabsTrigger>
             <TabsTrigger value="calls">
               <PhoneCall className="w-4 h-4 mr-1" />
-              Calls ({retellCalls.length})
+              Calls ({filteredCalls.length}{callFilter !== "all" ? `/${retellCalls.length}` : ""})
             </TabsTrigger>
           </TabsList>
 
