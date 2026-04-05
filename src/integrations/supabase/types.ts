@@ -314,6 +314,69 @@ export type Database = {
         }
         Relationships: []
       }
+      retell_calls: {
+        Row: {
+          call_id: string | null
+          call_status: string | null
+          call_type: string | null
+          callee_number: string | null
+          caller_number: string | null
+          created_at: string
+          custom_data: Json | null
+          direction: string | null
+          duration_ms: number | null
+          end_time: string | null
+          id: string
+          metadata: Json | null
+          recording_url: string | null
+          retell_agent_id: string | null
+          sentiment: string | null
+          start_time: string | null
+          summary: string | null
+          transcript: string | null
+        }
+        Insert: {
+          call_id?: string | null
+          call_status?: string | null
+          call_type?: string | null
+          callee_number?: string | null
+          caller_number?: string | null
+          created_at?: string
+          custom_data?: Json | null
+          direction?: string | null
+          duration_ms?: number | null
+          end_time?: string | null
+          id?: string
+          metadata?: Json | null
+          recording_url?: string | null
+          retell_agent_id?: string | null
+          sentiment?: string | null
+          start_time?: string | null
+          summary?: string | null
+          transcript?: string | null
+        }
+        Update: {
+          call_id?: string | null
+          call_status?: string | null
+          call_type?: string | null
+          callee_number?: string | null
+          caller_number?: string | null
+          created_at?: string
+          custom_data?: Json | null
+          direction?: string | null
+          duration_ms?: number | null
+          end_time?: string | null
+          id?: string
+          metadata?: Json | null
+          recording_url?: string | null
+          retell_agent_id?: string | null
+          sentiment?: string | null
+          start_time?: string | null
+          summary?: string | null
+          transcript?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
