@@ -316,64 +316,109 @@ export type Database = {
       }
       retell_calls: {
         Row: {
+          agent_name: string | null
+          agent_version: number | null
+          call_analysis: Json | null
+          call_cost: Json | null
           call_id: string | null
           call_status: string | null
           call_type: string | null
           callee_number: string | null
           caller_number: string | null
+          collected_dynamic_variables: Json | null
           created_at: string
           custom_data: Json | null
           direction: string | null
+          disconnection_reason: string | null
           duration_ms: number | null
           end_time: string | null
+          event_type: string | null
           id: string
+          latency: Json | null
           metadata: Json | null
+          opt_out_sensitive_data_storage: boolean | null
+          public_log_url: string | null
+          recording_multi_channel_url: string | null
           recording_url: string | null
           retell_agent_id: string | null
+          retell_llm_dynamic_variables: Json | null
           sentiment: string | null
           start_time: string | null
           summary: string | null
           transcript: string | null
+          transcript_object: Json | null
+          transcript_with_tool_calls: Json | null
+          transfer_destination: string | null
         }
         Insert: {
+          agent_name?: string | null
+          agent_version?: number | null
+          call_analysis?: Json | null
+          call_cost?: Json | null
           call_id?: string | null
           call_status?: string | null
           call_type?: string | null
           callee_number?: string | null
           caller_number?: string | null
+          collected_dynamic_variables?: Json | null
           created_at?: string
           custom_data?: Json | null
           direction?: string | null
+          disconnection_reason?: string | null
           duration_ms?: number | null
           end_time?: string | null
+          event_type?: string | null
           id?: string
+          latency?: Json | null
           metadata?: Json | null
+          opt_out_sensitive_data_storage?: boolean | null
+          public_log_url?: string | null
+          recording_multi_channel_url?: string | null
           recording_url?: string | null
           retell_agent_id?: string | null
+          retell_llm_dynamic_variables?: Json | null
           sentiment?: string | null
           start_time?: string | null
           summary?: string | null
           transcript?: string | null
+          transcript_object?: Json | null
+          transcript_with_tool_calls?: Json | null
+          transfer_destination?: string | null
         }
         Update: {
+          agent_name?: string | null
+          agent_version?: number | null
+          call_analysis?: Json | null
+          call_cost?: Json | null
           call_id?: string | null
           call_status?: string | null
           call_type?: string | null
           callee_number?: string | null
           caller_number?: string | null
+          collected_dynamic_variables?: Json | null
           created_at?: string
           custom_data?: Json | null
           direction?: string | null
+          disconnection_reason?: string | null
           duration_ms?: number | null
           end_time?: string | null
+          event_type?: string | null
           id?: string
+          latency?: Json | null
           metadata?: Json | null
+          opt_out_sensitive_data_storage?: boolean | null
+          public_log_url?: string | null
+          recording_multi_channel_url?: string | null
           recording_url?: string | null
           retell_agent_id?: string | null
+          retell_llm_dynamic_variables?: Json | null
           sentiment?: string | null
           start_time?: string | null
           summary?: string | null
           transcript?: string | null
+          transcript_object?: Json | null
+          transcript_with_tool_calls?: Json | null
+          transfer_destination?: string | null
         }
         Relationships: []
       }
