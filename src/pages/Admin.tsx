@@ -551,17 +551,45 @@ export default function Admin() {
 
           {/* Calls Tab */}
           <TabsContent value="calls">
-            {retellCalls.length === 0 ? (
+            {/* Date Filters */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="text-sm font-medium text-muted-foreground mr-1">Filter:</span>
+              {(["all", "today", "week"] as CallFilter[]).map((f) => (
+                <Button
+                  key={f}
+                  size="sm"
+                  variant={callFilter === f ? "default" : "outline"}
+                  onClick={() => { setCallFilter(f); setCustomDate(""); }}
+                >
+                  {f === "all" ? "All" : f === "today" ? "Today" : "This Week"}
+                </Button>
+              ))}
+              <Input
+                type="date"
+                className="w-auto h-8 text-sm"
+                value={customDate}
+                onChange={(e) => { setCustomDate(e.target.value); setCallFilter("custom"); }}
+                placeholder="Pick a date"
+              />
+              <span className="text-sm text-muted-foreground ml-2">
+                Showing {filteredCalls.length} of {retellCalls.length} calls
+              </span>
+            </div>
+
+            {filteredCalls.length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center text-muted-foreground">
-                  No calls recorded yet. Configure your Retell webhook to start receiving call data.
+                  {retellCalls.length === 0
+                    ? "No calls recorded yet. Configure your Retell webhook to start receiving call data."
+                    : "No calls match the selected filter."}
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
-                {retellCalls.map((call) => {
+                {filteredCalls.map((call) => {
                   const analysis = call.call_analysis || {};
                   const cost = call.call_cost as Record<string, unknown> || {};
+                  const matchedApp = findMatchingApplication(call);
                   const formatDuration = (ms?: number) => {
                     if (!ms) return "N/A";
                     const totalSec = Math.round(ms / 1000);
