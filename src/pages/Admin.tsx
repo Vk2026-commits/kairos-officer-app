@@ -155,6 +155,26 @@ export default function Admin() {
     });
   }, [retellCalls, callFilter, customDate]);
 
+  const [refreshing, setRefreshing] = useState(false);
+
+  const refreshData = async () => {
+    setRefreshing(true);
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("get-applications", {
+        body: { password },
+      });
+      if (fnError) throw fnError;
+      if (data.error) throw new Error(data.error);
+      setApplications(data.applications || []);
+      setEmploymentApplications(data.employmentApplications || []);
+      setRetellCalls(data.retellCalls || []);
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   const handleLogin = async () => {
     setLoading(true);
     setError("");
