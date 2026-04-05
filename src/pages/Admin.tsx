@@ -102,6 +102,7 @@ export default function Admin() {
       if (data.error) throw new Error(data.error);
       setApplications(data.applications || []);
       setEmploymentApplications(data.employmentApplications || []);
+      setRetellCalls(data.retellCalls || []);
       setIsAuthenticated(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to authenticate");
