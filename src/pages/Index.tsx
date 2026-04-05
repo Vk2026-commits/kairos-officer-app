@@ -1,4 +1,4 @@
-import { Phone, Mail, FileText, Briefcase } from "lucide-react";
+import { Phone, Mail, FileText, Briefcase, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,6 +79,22 @@ const Index = () => {
                 <CardContent>
                   <p className="text-muted-foreground">
                     Already hired? Complete your onboarding paperwork including W-4, direct deposit, background check, and more.
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link to="/admin" className="block">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer border-2 hover:border-primary">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <div className="rounded-full bg-primary/10 p-3">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <CardTitle className="text-xl">Admin Portal</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">
+                    Access the admin dashboard to manage applications, view call logs, and oversee operations.
                   </p>
                 </CardContent>
               </Card>
