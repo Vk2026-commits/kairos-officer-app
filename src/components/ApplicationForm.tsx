@@ -905,7 +905,106 @@ export function ApplicationForm() {
                     )}
                   />
                 </div>
-              )}
+               )}
+
+              {/* Document Uploads */}
+              <div className="mt-8 border-t pt-6">
+                <h3 className="font-semibold text-foreground mb-4 border-b pb-2 flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-primary" />
+                  Document Uploads
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Please upload clear photos or scans of the following documents. Accepted formats: JPG, PNG, PDF (max 10MB each).
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Driver's License */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Driver's License *</label>
+                    <input
+                      ref={dlInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setDriversLicenseFile, setDriversLicensePreview)}
+                    />
+                    {driversLicenseFile ? (
+                      <div className="border rounded-lg p-3 bg-muted/30">
+                        {driversLicensePreview ? (
+                          <img src={driversLicensePreview} alt="Driver's License" className="w-full h-40 object-contain rounded mb-2" />
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-muted rounded mb-2">
+                            <FileText className="w-10 h-10 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground truncate max-w-[180px]">{driversLicenseFile.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setDriversLicenseFile(null); setDriversLicensePreview(null); }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => dlInputRef.current?.click()}
+                        className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                      >
+                        <Image className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Click to upload</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Social Security Card */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Social Security Card *</label>
+                    <input
+                      ref={ssnInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setSsnCardFile, setSsnCardPreview)}
+                    />
+                    {ssnCardFile ? (
+                      <div className="border rounded-lg p-3 bg-muted/30">
+                        {ssnCardPreview ? (
+                          <img src={ssnCardPreview} alt="Social Security Card" className="w-full h-40 object-contain rounded mb-2" />
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-muted rounded mb-2">
+                            <FileText className="w-10 h-10 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground truncate max-w-[180px]">{ssnCardFile.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setSsnCardFile(null); setSsnCardPreview(null); }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => ssnInputRef.current?.click()}
+                        className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                      >
+                        <Image className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Click to upload</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
