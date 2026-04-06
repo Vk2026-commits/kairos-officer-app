@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import {
   User, Phone, CreditCard, Heart, FileText, Package, Lock, 
   FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2,
   Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2,
-  ClipboardList, CalendarClock, Receipt, Loader2
+  ClipboardList, CalendarClock, Receipt, Loader2, Upload, X, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
