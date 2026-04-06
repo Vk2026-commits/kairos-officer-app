@@ -99,29 +99,25 @@ function DocumentLinks({ applicationId }: { applicationId: string }) {
   const [docs, setDocs] = useState<{ name: string; url: string }[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useState; // Already imported at top
-  
-  const loadDocs = async () => {
-    const { data, error } = await supabase.storage
-      .from('onboarding-documents')
-      .list(applicationId);
-    
-    if (!error && data && data.length > 0) {
-      const urls = data.map((file) => {
-        const { data: urlData } = supabase.storage
-          .from('onboarding-documents')
-          .getPublicUrl(`${applicationId}/${file.name}`);
-        return { name: file.name, url: urlData.publicUrl };
-      });
-      setDocs(urls);
-    }
-    setLoading(false);
-  };
-
-  // Load on mount
-  if (loading) {
+  useEffect(() => {
+    const loadDocs = async () => {
+      const { data, error } = await supabase.storage
+        .from('onboarding-documents')
+        .list(applicationId);
+      
+      if (!error && data && data.length > 0) {
+        const urls = data.map((file) => {
+          const { data: urlData } = supabase.storage
+            .from('onboarding-documents')
+            .getPublicUrl(`${applicationId}/${file.name}`);
+          return { name: file.name, url: urlData.publicUrl };
+        });
+        setDocs(urls);
+      }
+      setLoading(false);
+    };
     loadDocs();
-  }
+  }, [applicationId]);
 
   if (!loading && docs.length === 0) return null;
 
