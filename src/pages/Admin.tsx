@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check, RefreshCw } from "lucide-react";
+import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check, RefreshCw, Image } from "lucide-react";
 import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
@@ -93,6 +93,62 @@ interface RetellCall {
   event_type?: string;
   metadata?: Record<string, unknown>;
   created_at: string;
+}
+
+function DocumentLinks({ applicationId }: { applicationId: string }) {
+  const [docs, setDocs] = useState<{ name: string; url: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDocs = async () => {
+      const { data, error } = await supabase.storage
+        .from('onboarding-documents')
+        .list(applicationId);
+      
+      if (!error && data && data.length > 0) {
+        const urlPromises = data.map(async (file) => {
+          const { data: urlData } = await supabase.storage
+            .from('onboarding-documents')
+            .createSignedUrl(`${applicationId}/${file.name}`, 3600);
+          return { name: file.name, url: urlData?.signedUrl || '' };
+        });
+        const urls = await Promise.all(urlPromises);
+        setDocs(urls.filter(u => u.url));
+      }
+      setLoading(false);
+    };
+    loadDocs();
+  }, [applicationId]);
+
+  if (!loading && docs.length === 0) return null;
+
+  return (
+    <div className="pt-2 border-t">
+      <div className="flex items-center gap-2 text-sm font-medium mb-2">
+        <Image className="w-4 h-4 text-primary" />
+        Uploaded Documents
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading documents...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {docs.map((doc) => (
+            <a
+              key={doc.name}
+              href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors text-sm"
+            >
+              <FileText className="w-4 h-4 text-primary shrink-0" />
+              <span className="font-medium capitalize">{doc.name.replace(/\.[^.]+$/, '').replace(/-/g, ' ')}</span>
+              <Eye className="w-3 h-3 ml-auto text-muted-foreground" />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 type CallFilter = "all" | "today" | "week" | "custom";
@@ -461,6 +517,9 @@ export default function Admin() {
                             <AvailabilityTable availability={getAvailability(app)!} title="Weekly Availability" />
                           </div>
                         )}
+
+                        {/* Uploaded Documents */}
+                        <DocumentLinks applicationId={app.id} />
                       </div>
                     </CardContent>
                   </Card>
