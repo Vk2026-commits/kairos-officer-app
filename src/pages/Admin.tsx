@@ -461,6 +461,9 @@ export default function Admin() {
                             <AvailabilityTable availability={getAvailability(app)!} title="Weekly Availability" />
                           </div>
                         )}
+
+                        {/* Uploaded Documents */}
+                        <DocumentLinks applicationId={app.id} />
                       </div>
                     </CardContent>
                   </Card>
