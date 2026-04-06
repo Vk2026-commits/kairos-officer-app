@@ -235,6 +235,36 @@ const TOTAL_STEPS = 21;
 export function ApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [driversLicenseFile, setDriversLicenseFile] = useState<File | null>(null);
+  const [driversLicensePreview, setDriversLicensePreview] = useState<string | null>(null);
+  const [ssnCardFile, setSsnCardFile] = useState<File | null>(null);
+  const [ssnCardPreview, setSsnCardPreview] = useState<string | null>(null);
+  const dlInputRef = useRef<HTMLInputElement>(null);
+  const ssnInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (
+    file: File | null,
+    setFile: (f: File | null) => void,
+    setPreview: (p: string | null) => void
+  ) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large", { description: "Maximum file size is 10MB." });
+      return;
+    }
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      toast.error("Invalid file type", { description: "Please upload an image or PDF." });
+      return;
+    }
+    setFile(file);
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
+  };
   
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
