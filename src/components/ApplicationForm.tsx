@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import {
   User, Phone, CreditCard, Heart, FileText, Package, Lock, 
   FileCheck, Smartphone, Clock, ChevronRight, ChevronLeft, Send, CheckCircle2,
   Shirt, Calendar, AlertTriangle, Shield, Pill, CalendarDays, Briefcase, Share2, Building2,
-  ClipboardList, CalendarClock, Receipt, Loader2
+  ClipboardList, CalendarClock, Receipt, Loader2, Upload, X, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -235,6 +235,36 @@ const TOTAL_STEPS = 21;
 export function ApplicationForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [driversLicenseFile, setDriversLicenseFile] = useState<File | null>(null);
+  const [driversLicensePreview, setDriversLicensePreview] = useState<string | null>(null);
+  const [ssnCardFile, setSsnCardFile] = useState<File | null>(null);
+  const [ssnCardPreview, setSsnCardPreview] = useState<string | null>(null);
+  const dlInputRef = useRef<HTMLInputElement>(null);
+  const ssnInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (
+    file: File | null,
+    setFile: (f: File | null) => void,
+    setPreview: (p: string | null) => void
+  ) => {
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large", { description: "Maximum file size is 10MB." });
+      return;
+    }
+    if (!file.type.startsWith("image/") && file.type !== "application/pdf") {
+      toast.error("Invalid file type", { description: "Please upload an image or PDF." });
+      return;
+    }
+    setFile(file);
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => setPreview(e.target?.result as string);
+      reader.readAsDataURL(file);
+    } else {
+      setPreview(null);
+    }
+  };
   
   const form = useForm<ApplicationFormData>({
     resolver: zodResolver(applicationSchema),
@@ -444,6 +474,20 @@ export function ApplicationForm() {
       }
 
       console.log("Application saved to database:", insertedApplication);
+
+      // Upload documents to storage
+      const applicationId = insertedApplication.id;
+      const uploadFile = async (file: File, docType: string) => {
+        const ext = file.name.split('.').pop();
+        const path = `${applicationId}/${docType}.${ext}`;
+        const { error } = await supabase.storage
+          .from('onboarding-documents')
+          .upload(path, file);
+        if (error) console.error(`Failed to upload ${docType}:`, error);
+      };
+
+      if (driversLicenseFile) await uploadFile(driversLicenseFile, 'drivers-license');
+      if (ssnCardFile) await uploadFile(ssnCardFile, 'social-security-card');
 
       // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-application-email', {
@@ -875,7 +919,106 @@ export function ApplicationForm() {
                     )}
                   />
                 </div>
-              )}
+               )}
+
+              {/* Document Uploads */}
+              <div className="mt-8 border-t pt-6">
+                <h3 className="font-semibold text-foreground mb-4 border-b pb-2 flex items-center gap-2">
+                  <Upload className="w-4 h-4 text-primary" />
+                  Document Uploads
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Please upload clear photos or scans of the following documents. Accepted formats: JPG, PNG, PDF (max 10MB each).
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Driver's License */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Driver's License *</label>
+                    <input
+                      ref={dlInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setDriversLicenseFile, setDriversLicensePreview)}
+                    />
+                    {driversLicenseFile ? (
+                      <div className="border rounded-lg p-3 bg-muted/30">
+                        {driversLicensePreview ? (
+                          <img src={driversLicensePreview} alt="Driver's License" className="w-full h-40 object-contain rounded mb-2" />
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-muted rounded mb-2">
+                            <FileText className="w-10 h-10 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground truncate max-w-[180px]">{driversLicenseFile.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setDriversLicenseFile(null); setDriversLicensePreview(null); }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => dlInputRef.current?.click()}
+                        className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                      >
+                        <Image className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Click to upload</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Social Security Card */}
+                  <div className="space-y-3">
+                    <label className="text-sm font-medium">Social Security Card *</label>
+                    <input
+                      ref={ssnInputRef}
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => handleFileSelect(e.target.files?.[0] || null, setSsnCardFile, setSsnCardPreview)}
+                    />
+                    {ssnCardFile ? (
+                      <div className="border rounded-lg p-3 bg-muted/30">
+                        {ssnCardPreview ? (
+                          <img src={ssnCardPreview} alt="Social Security Card" className="w-full h-40 object-contain rounded mb-2" />
+                        ) : (
+                          <div className="w-full h-40 flex items-center justify-center bg-muted rounded mb-2">
+                            <FileText className="w-10 h-10 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-muted-foreground truncate max-w-[180px]">{ssnCardFile.name}</span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => { setSsnCardFile(null); setSsnCardPreview(null); }}
+                          >
+                            <X className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => ssnInputRef.current?.click()}
+                        className="w-full h-40 border-2 border-dashed border-muted-foreground/30 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-primary/50 hover:bg-primary/5 transition-colors"
+                      >
+                        <Image className="w-8 h-8 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">Click to upload</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
