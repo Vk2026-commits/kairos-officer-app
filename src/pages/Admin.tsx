@@ -95,6 +95,65 @@ interface RetellCall {
   created_at: string;
 }
 
+function DocumentLinks({ applicationId }: { applicationId: string }) {
+  const [docs, setDocs] = useState<{ name: string; url: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useState; // Already imported at top
+  
+  const loadDocs = async () => {
+    const { data, error } = await supabase.storage
+      .from('onboarding-documents')
+      .list(applicationId);
+    
+    if (!error && data && data.length > 0) {
+      const urls = data.map((file) => {
+        const { data: urlData } = supabase.storage
+          .from('onboarding-documents')
+          .getPublicUrl(`${applicationId}/${file.name}`);
+        return { name: file.name, url: urlData.publicUrl };
+      });
+      setDocs(urls);
+    }
+    setLoading(false);
+  };
+
+  // Load on mount
+  if (loading) {
+    loadDocs();
+  }
+
+  if (!loading && docs.length === 0) return null;
+
+  return (
+    <div className="pt-2 border-t">
+      <div className="flex items-center gap-2 text-sm font-medium mb-2">
+        <Image className="w-4 h-4 text-primary" />
+        Uploaded Documents
+      </div>
+      {loading ? (
+        <p className="text-sm text-muted-foreground">Loading documents...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {docs.map((doc) => (
+            <a
+              key={doc.name}
+              href={doc.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors text-sm"
+            >
+              <FileText className="w-4 h-4 text-primary shrink-0" />
+              <span className="font-medium capitalize">{doc.name.replace(/\.[^.]+$/, '').replace(/-/g, ' ')}</span>
+              <Eye className="w-3 h-3 ml-auto text-muted-foreground" />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 type CallFilter = "all" | "today" | "week" | "custom";
 
 export default function Admin() {
