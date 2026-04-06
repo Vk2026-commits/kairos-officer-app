@@ -106,13 +106,14 @@ function DocumentLinks({ applicationId }: { applicationId: string }) {
         .list(applicationId);
       
       if (!error && data && data.length > 0) {
-        const urls = data.map((file) => {
-          const { data: urlData } = supabase.storage
+        const urlPromises = data.map(async (file) => {
+          const { data: urlData } = await supabase.storage
             .from('onboarding-documents')
-            .getPublicUrl(`${applicationId}/${file.name}`);
-          return { name: file.name, url: urlData.publicUrl };
+            .createSignedUrl(`${applicationId}/${file.name}`, 3600);
+          return { name: file.name, url: urlData?.signedUrl || '' };
         });
-        setDocs(urls);
+        const urls = await Promise.all(urlPromises);
+        setDocs(urls.filter(u => u.url));
       }
       setLoading(false);
     };
