@@ -475,6 +475,20 @@ export function ApplicationForm() {
 
       console.log("Application saved to database:", insertedApplication);
 
+      // Upload documents to storage
+      const applicationId = insertedApplication.id;
+      const uploadFile = async (file: File, docType: string) => {
+        const ext = file.name.split('.').pop();
+        const path = `${applicationId}/${docType}.${ext}`;
+        const { error } = await supabase.storage
+          .from('onboarding-documents')
+          .upload(path, file);
+        if (error) console.error(`Failed to upload ${docType}:`, error);
+      };
+
+      if (driversLicenseFile) await uploadFile(driversLicenseFile, 'drivers-license');
+      if (ssnCardFile) await uploadFile(ssnCardFile, 'social-security-card');
+
       // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-application-email', {
         body: {
