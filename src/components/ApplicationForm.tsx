@@ -637,7 +637,7 @@ export function ApplicationForm() {
       </div>
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
           
           {/* Step 1: I-9 Employment Eligibility */}
           {currentStep === 1 && (
