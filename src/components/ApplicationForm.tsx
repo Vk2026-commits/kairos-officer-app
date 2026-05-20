@@ -489,10 +489,11 @@ export function ApplicationForm() {
       if (ssnCardFile) await uploadFile(ssnCardFile, 'social-security-card');
 
       // Send email notification
+      // Send email notification
       const { error: emailError } = await supabase.functions.invoke('send-application-email', {
         body: {
-          id: insertedApplication.id,
-          firstName: data.firstName,
+          id: applicationId,
+
           lastName: data.lastName,
           email: data.email,
           phone: data.phone,
