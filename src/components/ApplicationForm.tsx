@@ -461,22 +461,21 @@ export function ApplicationForm() {
         full_form_data: JSON.parse(JSON.stringify(data)),
       };
 
-      // Save to database
-      const { data: insertedApplication, error: dbError } = await supabase
+      // Save to database (generate ID client-side; RLS blocks SELECT on returning row)
+      const applicationId = crypto.randomUUID();
+      const { error: dbError } = await supabase
         .from('applications')
-        .insert(applicationData)
-        .select()
-        .single();
+        .insert({ ...applicationData, id: applicationId });
 
       if (dbError) {
         console.error("Database error:", dbError);
         throw new Error("Failed to save application");
       }
 
-      console.log("Application saved to database:", insertedApplication);
+      console.log("Application saved to database:", applicationId);
 
       // Upload documents to storage
-      const applicationId = insertedApplication.id;
+
       const uploadFile = async (file: File, docType: string) => {
         const ext = file.name.split('.').pop();
         const path = `${applicationId}/${docType}.${ext}`;
