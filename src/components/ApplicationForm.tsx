@@ -571,6 +571,7 @@ export function ApplicationForm() {
       // Reset form after successful submission
       form.reset();
       setCurrentStep(1);
+      clearDraft();
       
     } catch (error) {
       console.error("Submission error:", error);
