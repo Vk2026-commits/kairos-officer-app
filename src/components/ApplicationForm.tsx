@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -403,6 +403,55 @@ export function ApplicationForm() {
     },
   });
 
+  const STORAGE_KEY = "onboarding-packet-draft";
+  const STEP_KEY = "onboarding-packet-step";
+  const [draftRestored, setDraftRestored] = useState(false);
+
+  // Restore saved draft on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      const savedStep = localStorage.getItem(STEP_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        form.reset(parsed);
+        if (savedStep) setCurrentStep(Number(savedStep) || 1);
+        setDraftRestored(true);
+        toast.success("Welcome back!", {
+          description: "We restored your saved progress.",
+        });
+      }
+    } catch (e) {
+      console.warn("Could not restore draft:", e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave on any field change (debounced)
+  useEffect(() => {
+    const sub = form.watch((values) => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
+      } catch {}
+    });
+    return () => sub.unsubscribe();
+  }, [form]);
+
+  // Save current step
+  useEffect(() => {
+    try {
+      localStorage.setItem(STEP_KEY, String(currentStep));
+    } catch {}
+  }, [currentStep]);
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(STEP_KEY);
+    } catch {}
+  };
+
+
   const onSubmit = async (data: ApplicationFormData) => {
     setIsSubmitting(true);
     
@@ -522,6 +571,7 @@ export function ApplicationForm() {
       // Reset form after successful submission
       form.reset();
       setCurrentStep(1);
+      clearDraft();
       
     } catch (error) {
       console.error("Submission error:", error);
@@ -634,7 +684,28 @@ export function ApplicationForm() {
         <p className="text-sm text-muted-foreground">
           Step {currentStep} of {TOTAL_STEPS}: <span className="text-foreground font-medium">{steps[currentStep - 1].description}</span>
         </p>
+        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-accent" />
+            Progress saved automatically on this device
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("Clear all saved progress and start over?")) {
+                clearDraft();
+                form.reset();
+                setCurrentStep(1);
+                toast.success("Saved progress cleared");
+              }
+            }}
+            className="underline hover:text-foreground transition-colors"
+          >
+            Start over
+          </button>
+        </div>
       </div>
+
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
