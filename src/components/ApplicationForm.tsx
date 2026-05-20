@@ -533,6 +533,42 @@ export function ApplicationForm() {
     }
   };
 
+  // Map each field to the step it lives on, so we can jump back on validation error
+  const fieldToStep: Record<string, number> = {
+    lastName: 1, firstName: 1, middleInitial: 1, otherLastNames: 1, address: 1, aptNumber: 1,
+    city: 1, state: 1, zipCode: 1, dateOfBirth: 1, ssn: 1, email: 1, phone: 1,
+    citizenshipStatus: 1, uscisNumber: 1, i94Number: 1, foreignPassportNumber: 1,
+    countryOfIssuance: 1, workAuthExpiration: 1,
+    bankName: 2, routingNumber: 2, accountNumber: 2, accountType: 2, depositType: 2, depositAmount: 2,
+    emergencyName1: 3, emergencyRelationship1: 3, emergencyPhone1: 3,
+    handbookAcknowledged: 4,
+    confidentialityAcknowledged: 6, position: 6,
+    offerAccepted: 7,
+    temporaryEmploymentAcknowledged: 9,
+    personalAppearanceAcknowledged: 10,
+    attendancePolicyAcknowledged: 11,
+    disciplinaryPolicyAcknowledged: 12,
+    drugAlcoholPolicyAcknowledged: 13,
+    drugTestConsentAcknowledged: 14,
+    jobDescriptionAcknowledged: 16,
+    socialMediaPolicyAcknowledged: 17,
+    workersCompNoticeAcknowledged: 18,
+    uniformChecklistAcknowledged: 19,
+    scheduleAcknowledged: 20,
+    w4FilingStatus: 21, w4Acknowledged: 21,
+    backgroundCheckConsent: 21,
+  };
+
+  const onInvalid = (errors: any) => {
+    const firstField = Object.keys(errors)[0];
+    const step = fieldToStep[firstField] ?? currentStep;
+    const message = errors[firstField]?.message || "Please complete all required fields.";
+    toast.error("Missing required information", {
+      description: `${message} (Step ${step})`,
+    });
+    setCurrentStep(step);
+  };
+
   const nextStep = () => {
     if (currentStep < TOTAL_STEPS) setCurrentStep(currentStep + 1);
   };
@@ -540,6 +576,7 @@ export function ApplicationForm() {
   const prevStep = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
+
 
   const citizenshipStatus = form.watch("citizenshipStatus");
 
