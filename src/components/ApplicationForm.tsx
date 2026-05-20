@@ -684,7 +684,28 @@ export function ApplicationForm() {
         <p className="text-sm text-muted-foreground">
           Step {currentStep} of {TOTAL_STEPS}: <span className="text-foreground font-medium">{steps[currentStep - 1].description}</span>
         </p>
+        <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1">
+            <CheckCircle2 className="w-3 h-3 text-accent" />
+            Progress saved automatically on this device
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              if (confirm("Clear all saved progress and start over?")) {
+                clearDraft();
+                form.reset();
+                setCurrentStep(1);
+                toast.success("Saved progress cleared");
+              }
+            }}
+            className="underline hover:text-foreground transition-colors"
+          >
+            Start over
+          </button>
+        </div>
       </div>
+
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="space-y-6">
