@@ -289,14 +289,19 @@ export async function generateOnboardingPacketPDF(
     signatureFields: ["Temporary Employees Signature Date"],
   });
 
-  // 13 - Personal appearance (no fields: stamp acknowledgement)
-  await add("/forms/13-personal-appearance.pdf", {}, [
-    ackStamp(
-      b(d, "personalAppearanceAcknowledged")
-        ? "Acknowledged - Personal Appearance Policy."
-        : "Not acknowledged."
-    ),
-  ]);
+  // 13 - Personal appearance (no form fields: draw on the printed lines)
+  const appearanceSigned = b(d, "personalAppearanceAcknowledged");
+  await add("/forms/13-personal-appearance.pdf", {
+    draws: [
+      { page: 0, x: 158, y: 604, text: signDate, size: 10 },
+      ...(appearanceSigned
+        ? [
+            { page: 0, x: 74, y: 120, text: fullName, size: 12, script: true },
+            { page: 0, x: 332, y: 120, text: fullName, size: 10 },
+          ]
+        : []),
+    ],
+  });
 
   // 14 - Attendance & punctuality
   await add("/forms/14-attendance-punctuality.pdf", {}, [
