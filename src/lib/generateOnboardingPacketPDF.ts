@@ -250,11 +250,17 @@ export async function generateOnboardingPacketPDF(
 
   // 11 - TrackTik login sheet
   await add("/forms/11-track-tik-login-info-sheet.pdf", {
-    text: {
-      Employee: fullName,
-      "User Name  for Track Tik": s(d, "trackTikUsername"),
-      "Password  for  Track Tik": b(d, "trackTikPasswordSet") ? "(set by employee)" : "",
-    },
+    draws: [
+      { page: 0, x: 160, y: 792 - 328, text: s(d, "trackTikUsername"), size: 10 },
+      {
+        page: 0,
+        x: 160,
+        y: 792 - 350,
+        text: b(d, "trackTikPasswordSet") ? "(set by employee)" : "",
+        size: 10,
+      },
+      { page: 0, x: 160, y: 792 - 372, text: fullName, size: 10 },
+    ],
   });
 
   // 12 - Temporary employment acknowledgement
