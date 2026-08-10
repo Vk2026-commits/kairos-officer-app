@@ -324,8 +324,8 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 146, y: 626, text: signDate, size: 10 },
       ...(disciplinarySigned
         ? [
-            { page: 0, x: 74, y: 138, text: fullName, size: 12, signature: true },
-            { page: 0, x: 336, y: 138, text: fullName, size: 10 },
+            { page: 0, x: 74, y: 147, text: fullName, size: 12, signature: true },
+            { page: 0, x: 336, y: 147, text: fullName, size: 10 },
           ]
         : []),
     ],
