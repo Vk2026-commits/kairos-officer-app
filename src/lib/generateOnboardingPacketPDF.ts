@@ -55,6 +55,7 @@ export async function generateOnboardingPacketPDF(
   const phone = s(d, "phone") || (app.phone ?? "");
   const email = s(d, "email") || (app.email ?? "");
   const ssn = s(d, "ssn") || (app.ssn ?? "");
+  const ssnDigits = ssn.replace(/\D/g, "");
   const dob = fmtDate(s(d, "dateOfBirth") || (app.date_of_birth ?? ""));
   const signDate = today(app.created_at);
   const position = s(d, "position");
