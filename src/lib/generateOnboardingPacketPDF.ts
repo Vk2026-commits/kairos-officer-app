@@ -352,6 +352,8 @@ export async function generateOnboardingPacketPDF(
       "Employee Name": fullName,
       Date: signDate,
     },
+    drawAt: { Text1: b(d, "drugTestConsentAcknowledged") ? fullName : "" },
+    signatureFields: ["Text1"],
   });
 
   // 18 - Employee availability
