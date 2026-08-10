@@ -154,7 +154,6 @@ export async function generateOnboardingPacketPDF(
       "Entire Net Amount": depositType === "full",
     },
     drawAt: { "Employee Signature": fullName },
-    drawAt: { "Employee Signature": fullName },
     signatureFields: ["Employee Signature"],
     draws: [
       { page: 1, x: 474, y: 344, text: ssnDigits.slice(0, 3), size: 9 },
