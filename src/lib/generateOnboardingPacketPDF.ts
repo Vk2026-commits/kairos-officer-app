@@ -109,7 +109,7 @@ export async function generateOnboardingPacketPDF(
       State: state,
       "ZIP Code": zip,
       "Date of Birth mmddyyyy": dob,
-      "US Social Security Number": ssn,
+      "US Social Security Number": ssnDigits,
       "Employees E-mail Address": email,
       "Telephone Number": phone,
       "Signature of Employee": fullName,
