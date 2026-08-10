@@ -156,9 +156,9 @@ export async function generateOnboardingPacketPDF(
     drawAt: { "Employee Signature": fullName },
     signatureFields: ["Employee Signature"],
     draws: [
-      { page: 1, x: 474, y: 344, text: ssnDigits.slice(0, 3), size: 9 },
-      { page: 1, x: 512, y: 344, text: ssnDigits.slice(3, 5), size: 9 },
-      { page: 1, x: 546, y: 344, text: ssnDigits.slice(5, 9), size: 9 },
+      { page: 1, x: 472, y: 346, text: ssnDigits.slice(0, 3), size: 9 },
+      { page: 1, x: 508, y: 346, text: ssnDigits.slice(3, 5), size: 9 },
+      { page: 1, x: 538, y: 346, text: ssnDigits.slice(5, 9), size: 9 },
     ],
   });
 
