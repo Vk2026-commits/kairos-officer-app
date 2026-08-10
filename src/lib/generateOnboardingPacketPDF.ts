@@ -243,13 +243,17 @@ export async function generateOnboardingPacketPDF(
       "Employee Name": fullName,
       "Street Address": address,
       "City State ZIP": cityStateZip,
-      undefined: s(d, "hourlyRate"),
+      undefined: first,
+      Text6: fmtDate(s(d, "scheduledStartDate")) || signDate,
       "Printed Name": b(d, "offerAccepted") ? fullName : "",
-      Date: fmtDate(s(d, "scheduledStartDate")) || signDate,
+      Date: signDate,
+    },
+    drawAt: {
       "Signature1_es_:signer:signature": b(d, "offerAccepted") ? fullName : "",
     },
     signatureFields: ["Signature1_es_:signer:signature"],
     checks: { "Check Box5": b(d, "offerAccepted") },
+    draws: [{ page: 0, x: 331, y: 792 - 526, text: s(d, "hourlyRate"), size: 9 }],
   });
 
   // 11 - TrackTik login sheet
