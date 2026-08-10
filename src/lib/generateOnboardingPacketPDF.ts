@@ -449,26 +449,48 @@ export async function generateOnboardingPacketPDF(
     ["uniformIdBadge", "ID badge"],
   ];
   const issued = uniformItems.filter(([k]) => b(d, k)).map(([, label]) => label);
-  await add("/forms/23-uniform-check-list.pdf", {}, [
+  // Row order as printed on the official checklist (last four rows repeat items)
+  const uniformRowKeys = [
+    "uniformLongSleeveShirt",
+    "uniformShortSleeveButtonUp",
+    "uniformShortSleeveShirt",
+    "uniformHighVisLongSleeve",
+    "uniformHighVisShortSleeve",
+    "uniformTie",
+    "uniformSilverBadge",
+    "uniformSilverSOs",
+    "uniformPants",
+    "uniformBomberJacket",
+    "uniformJacket",
+    "uniformBeanieHat",
+    "uniformBaseballHat",
+    "uniformFlashlight",
+    "uniformFlagPatch",
+    "uniformRadio",
+    "uniformIdBadge",
+  ];
+  const uniformRowY = [
+    208, 239, 270, 300, 330, 359, 378, 396, 412, 430, 448, 466, 484, 502, 520,
+    538, 556,
+  ];
+  const uniformDraws = uniformRowKeys
+    .map((key, i) => ({
+      page: 0,
+      x: 100,
+      y: 792 - uniformRowY[i] * 1.056 - 3,
+      text: b(d, key) ? "X" : "",
+      size: 9,
+    }))
+    .filter((dr) => dr.text);
+  await add("/forms/23-uniform-check-list.pdf", { draws: uniformDraws }, [
     ackStamp(
       b(d, "uniformChecklistAcknowledged")
         ? "Acknowledged - Uniform Checklist."
         : "Not acknowledged.",
-      [
-        { label: "Items issued:", value: issued.join(", ") || "None selected" },
-        {
-          label: "Sizes:",
-          value: [
-            s(d, "uniformShirtSize") && `Shirt ${s(d, "uniformShirtSize")}`,
-            s(d, "uniformPantsSize") && `Pants ${s(d, "uniformPantsSize")}`,
-            s(d, "uniformShoeSize") && `Shoe ${s(d, "uniformShoeSize")}`,
-          ]
-            .filter(Boolean)
-            .join("  |  "),
-        },
-      ]
+      [{ label: "Items issued:", value: issued.join(", ") || "None selected" }]
     ),
   ]);
+
 
   // 24 - Work schedule
   const days: [string, string][] = [
