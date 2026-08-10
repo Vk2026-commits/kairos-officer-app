@@ -199,6 +199,7 @@ const applicationSchema = z.object({
   // Step 5: Signature
   w4SignatureDate: z.string().optional(),
   w4Acknowledged: z.boolean().refine(val => val === true, "You must sign the W-4 form"),
+  typedSignature: z.string().min(2, "Please click to sign with your typed signature"),
   
   // Background Check Consent
   backgroundCheckConsent: z.boolean().refine(val => val === true, "You must consent to background check"),
@@ -398,6 +399,7 @@ export function ApplicationForm() {
       w4Deductions: "",
       w4ExtraWithholding: "",
       w4SignatureDate: "",
+      typedSignature: "",
       w4Acknowledged: false,
       backgroundCheckConsent: false,
     },
@@ -3247,6 +3249,66 @@ export function ApplicationForm() {
                           By checking this box, I am electronically signing this Form W-4.
                         </FormDescription>
                       </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Typed cursive signature */}
+              <div className="border border-primary/30 rounded-lg p-4 mb-6">
+                <h3 className="font-bold text-foreground mb-1">Your Signature</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Click the button below to have your signature typed for you in cursive. This signature
+                  will be applied to every document in this packet.
+                </p>
+                <FormField
+                  control={form.control}
+                  name="typedSignature"
+                  render={({ field }) => (
+                    <FormItem>
+                      <div className="rounded-md border bg-background px-4 py-6 flex items-center justify-center min-h-[96px]">
+                        {field.value ? (
+                          <span
+                            className="text-4xl text-foreground"
+                            style={{ fontFamily: "'Great Vibes', cursive" }}
+                          >
+                            {field.value}
+                          </span>
+                        ) : (
+                          <span className="text-sm text-muted-foreground">No signature yet</span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        <Button
+                          type="button"
+                          onClick={() => {
+                            const name = [
+                              form.getValues("firstName"),
+                              form.getValues("middleInitial"),
+                              form.getValues("lastName"),
+                            ]
+                              .filter(Boolean)
+                              .join(" ")
+                              .trim();
+                            if (!name) {
+                              toast.error("Please enter your name in Step 1 first.");
+                              return;
+                            }
+                            field.onChange(name);
+                          }}
+                        >
+                          Click to sign as {[form.watch("firstName"), form.watch("lastName")].filter(Boolean).join(" ") || "me"}
+                        </Button>
+                        {field.value && (
+                          <Button type="button" variant="outline" onClick={() => field.onChange("")}>
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                      <FormDescription>
+                        By clicking, you adopt this typed cursive signature as your legal electronic signature.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

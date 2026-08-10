@@ -1,4 +1,30 @@
 import { PDFDocument, PDFFont, StandardFonts, rgb } from "pdf-lib";
+import fontkit from "@pdf-lib/fontkit";
+
+let scriptFontBytes: ArrayBuffer | null = null;
+
+/** Loads (and caches) the cursive font used for typed signatures. */
+async function embedScriptFont(doc: PDFDocument, fallback: PDFFont): Promise<PDFFont> {
+  try {
+    doc.registerFontkit(fontkit);
+    if (!scriptFontBytes) {
+      const res = await fetch("/fonts/GreatVibes-Regular.ttf");
+      if (!res.ok) return fallback;
+      scriptFontBytes = await res.arrayBuffer();
+    }
+    return await doc.embedFont(scriptFontBytes, { subset: true });
+  } catch {
+    return fallback;
+  }
+}
+
+/** Baseline that vertically centers text of `size` inside a box. */
+export function centeredBaseline(font: PDFFont, size: number, boxY: number, boxHeight: number): number {
+  const ascent = font.heightAtSize(size, { descender: false });
+  const full = font.heightAtSize(size);
+  const descent = full - ascent;
+  return boxY + (boxHeight - full) / 2 + descent;
+}
 
 export type FillSpec = {
   /** field name -> value for text fields / dropdowns */
@@ -17,6 +43,8 @@ export type FillSpec = {
     text?: string;
     size?: number;
     signature?: boolean;
+    /** width of the line/box starting at x - text is centred inside it */
+    width?: number;
   }[];
 };
 
@@ -52,7 +80,7 @@ export async function fillTemplate(
 ): Promise<PDFDocument> {
   const doc = await loadTemplate(path);
   const helv = await doc.embedFont(StandardFonts.Helvetica);
-  const script = await doc.embedFont(StandardFonts.TimesRomanItalic);
+  const script = await embedScriptFont(doc, await doc.embedFont(StandardFonts.TimesRomanItalic));
 
   let form: ReturnType<PDFDocument["getForm"]> | null = null;
   try {
@@ -114,12 +142,18 @@ export async function fillTemplate(
           const page =
             doc.getPages().find((p) => p.ref === pageRef) ?? doc.getPages()[0];
           const useScript = sigSet.has(name);
-          const size = Math.min(useScript ? 13 : 10, Math.max(7, rect.height - 4));
+          const font = useScript ? script : helv;
+          let size = Math.min(useScript ? 14 : 10, Math.max(7, rect.height - 3));
+          // Shrink until the text fits the widget, then centre it on the line.
+          while (size > 5 && font.widthOfTextAtSize(value, size) > rect.width - 6) {
+            size -= 0.5;
+          }
+          const textWidth = font.widthOfTextAtSize(value, size);
           page.drawText(value, {
-            x: rect.x + 3,
-            y: rect.y + Math.max(2, (rect.height - size) / 2),
+            x: rect.x + Math.max(3, (rect.width - textWidth) / 2),
+            y: centeredBaseline(font, size, rect.y, rect.height),
             size,
-            font: useScript ? script : helv,
+            font,
             color: rgb(0, 0, 0),
           });
         }
@@ -152,11 +186,16 @@ export async function fillTemplate(
     if (!value) continue;
     const pages = doc.getPages();
     const page = pages[Math.min(pages.length - 1, draw.page ?? 0)];
+    const font = draw.signature ? script : helv;
+    const size = draw.size ?? (draw.signature ? 14 : 10);
+    const x = draw.width
+      ? draw.x + Math.max(0, (draw.width - font.widthOfTextAtSize(value, size)) / 2)
+      : draw.x;
     page.drawText(value, {
-      x: draw.x,
+      x,
       y: draw.y,
-      size: draw.size ?? (draw.signature ? 12 : 10),
-      font: draw.signature ? script : helv,
+      size,
+      font,
       color: rgb(0, 0, 0),
     });
   }
@@ -249,8 +288,8 @@ function applyStamp(
     const labelWidth = helv.widthOfTextAtSize(line.label, 8);
     page.drawText(clean(line.value), {
       x: 48 + labelWidth,
-      y: y - 1,
-      size: line.signature ? 12 : 10,
+      y,
+      size: line.signature ? 13 : 10,
       font: line.signature ? script : helv,
       color: rgb(0, 0, 0),
     });
