@@ -9,6 +9,15 @@ export type FillSpec = {
   drawAt?: Record<string, string | undefined>;
   /** field names whose drawn value should use the signature font */
   signatureFields?: string[];
+  /** absolute-positioned text (y measured from the bottom of the page) */
+  draws?: {
+    page?: number;
+    x: number;
+    y: number;
+    text?: string;
+    size?: number;
+    signature?: boolean;
+  }[];
 };
 
 export type Stamp = {
