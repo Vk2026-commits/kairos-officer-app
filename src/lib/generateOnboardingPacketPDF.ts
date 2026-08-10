@@ -588,7 +588,8 @@ export function w4Spec(d: D, ctx: W4Ctx) {
         page: 0,
         x: 130,
         y: 142,
-        text: `${ctx.first} ${ctx.last}`.trim(),
+        text: (s(d, "typedSignature") || `${ctx.first} ${ctx.last}`).trim(),
+        size: 14,
         signature: true,
       },
       {
