@@ -393,17 +393,25 @@ export async function generateOnboardingPacketPDF(
   ]);
 
   // 21 - Social & digital media code of conduct
+  const socialAck = b(d, "socialMediaPolicyAcknowledged");
   await add(
     "/forms/21-social-and-digital-media-code-of-conduct-for-your-organization.pdf",
-    {},
-    [
-      ackStamp(
-        b(d, "socialMediaPolicyAcknowledged")
-          ? "Acknowledged - Social & Digital Media Code of Conduct."
-          : "Not acknowledged."
-      ),
-    ]
+    {
+      draws: [
+        { page: 99, x: 74, y: 554, text: socialAck ? fullName : "", size: 10 },
+        {
+          page: 99,
+          x: 74,
+          y: 512,
+          text: socialAck ? fullName : "",
+          size: 12,
+          signature: true,
+        },
+        { page: 99, x: 74, y: 470, text: socialAck ? signDate : "", size: 10 },
+      ],
+    }
   );
+
 
   // 22 - Texas Department of Insurance notice
   await add("/forms/22-texas-department-of-insurance.pdf", {}, [
