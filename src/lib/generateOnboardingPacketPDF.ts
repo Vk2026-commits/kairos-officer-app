@@ -304,13 +304,18 @@ export async function generateOnboardingPacketPDF(
   });
 
   // 14 - Attendance & punctuality
-  await add("/forms/14-attendance-punctuality.pdf", {}, [
-    ackStamp(
-      b(d, "attendancePolicyAcknowledged")
-        ? "Acknowledged - Attendance & Punctuality Policy."
-        : "Not acknowledged."
-    ),
-  ]);
+  const attendanceSigned = b(d, "attendancePolicyAcknowledged");
+  await add("/forms/14-attendance-punctuality.pdf", {
+    draws: [
+      { page: 0, x: 170, y: 634, text: signDate, size: 10 },
+      ...(attendanceSigned
+        ? [
+            { page: 0, x: 102, y: 122, text: fullName, size: 12, signature: true },
+            { page: 0, x: 318, y: 122, text: fullName, size: 10 },
+          ]
+        : []),
+    ],
+  });
 
   // 15 - Disciplinary action
   await add("/forms/15-disciplinary-action.pdf", {}, [
