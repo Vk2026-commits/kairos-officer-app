@@ -318,13 +318,18 @@ export async function generateOnboardingPacketPDF(
   });
 
   // 15 - Disciplinary action
-  await add("/forms/15-disciplinary-action.pdf", {}, [
-    ackStamp(
-      b(d, "disciplinaryPolicyAcknowledged")
-        ? "Acknowledged - Disciplinary Action Policy."
-        : "Not acknowledged."
-    ),
-  ]);
+  const disciplinarySigned = b(d, "disciplinaryPolicyAcknowledged");
+  await add("/forms/15-disciplinary-action.pdf", {
+    draws: [
+      { page: 0, x: 146, y: 626, text: signDate, size: 10 },
+      ...(disciplinarySigned
+        ? [
+            { page: 0, x: 74, y: 138, text: fullName, size: 12, signature: true },
+            { page: 0, x: 336, y: 138, text: fullName, size: 10 },
+          ]
+        : []),
+    ],
+  });
 
   // 16 - Drug abuse policy
   await add("/forms/16-drug-abuse.pdf", {}, [
