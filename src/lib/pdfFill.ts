@@ -141,6 +141,20 @@ export async function fillTemplate(
     }
   }
 
+  for (const draw of spec.draws ?? []) {
+    const value = clean(draw.text);
+    if (!value) continue;
+    const pages = doc.getPages();
+    const page = pages[Math.min(pages.length - 1, draw.page ?? 0)];
+    page.drawText(value, {
+      x: draw.x,
+      y: draw.y,
+      size: draw.size ?? (draw.signature ? 12 : 10),
+      font: draw.signature ? script : helv,
+      color: rgb(0, 0, 0),
+    });
+  }
+
   for (const stamp of stamps) {
     applyStamp(doc, stamp, helv, script);
   }
