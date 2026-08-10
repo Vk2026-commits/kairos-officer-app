@@ -66,7 +66,13 @@ export async function fillTemplate(
       const value = clean(raw);
       if (!value) continue;
       try {
-        form.getTextField(name).setText(value);
+        const tf = form.getTextField(name);
+        tf.setText(value);
+        try {
+          tf.setFontSize(value.length > 60 ? 8 : 10);
+        } catch {
+          /* auto-size not supported */
+        }
         continue;
       } catch {
         /* not a text field */
