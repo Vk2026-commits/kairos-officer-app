@@ -114,7 +114,6 @@ export async function generateOnboardingPacketPDF(
       "US Social Security Number": ssnDigits,
       "Employees E-mail Address": email,
       "Telephone Number": phone,
-      "Signature of Employee": fullName,
       "Today's Date mmddyyy": signDate,
       "3 A lawful permanent resident Enter USCIS or ANumber":
         citizenship === "permanent_resident" ? s(d, "uscisNumber") : "",
@@ -134,6 +133,7 @@ export async function generateOnboardingPacketPDF(
       CB_3: citizenship === "permanent_resident",
       CB_4: citizenship === "authorized_alien",
     },
+    drawAt: { "Signature of Employee": sigName },
     signatureFields: ["Signature of Employee"],
   });
 
@@ -405,8 +405,8 @@ export async function generateOnboardingPacketPDF(
           page: 99,
           x: 74,
           y: 516,
-          text: socialAck ? fullName : "",
-          size: 12,
+          text: socialAck ? sigName : "",
+          size: 14,
           signature: true,
         },
         { page: 99, x: 74, y: 474, text: socialAck ? signDate : "", size: 10 },
