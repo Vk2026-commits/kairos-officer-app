@@ -244,7 +244,6 @@ export async function generateOnboardingPacketPDF(
       "Street Address": address,
       "City State ZIP": cityStateZip,
       undefined: first,
-      Text6: fmtDate(s(d, "scheduledStartDate")) || signDate,
       "Printed Name": b(d, "offerAccepted") ? fullName : "",
       Date: signDate,
     },
@@ -253,7 +252,16 @@ export async function generateOnboardingPacketPDF(
     },
     signatureFields: ["Signature1_es_:signer:signature"],
     checks: { "Check Box5": b(d, "offerAccepted") },
-    draws: [{ page: 0, x: 331, y: 792 - 526, text: s(d, "hourlyRate"), size: 9 }],
+    draws: [
+      { page: 0, x: 331, y: 517, text: s(d, "hourlyRate"), size: 9 },
+      {
+        page: 0,
+        x: 322,
+        y: 546,
+        text: fmtDate(s(d, "scheduledStartDate")) || signDate,
+        size: 9,
+      },
+    ],
   });
 
   // 11 - TrackTik login sheet
