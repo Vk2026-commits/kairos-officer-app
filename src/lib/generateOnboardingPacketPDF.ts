@@ -500,5 +500,21 @@ export function w4Spec(d: D, ctx: W4Ctx) {
       [`${p1}.c1_1[2]`]: status === "head_of_household",
       [`${p1}.c1_2[0]`]: d["w4MultipleJobsCheckbox"] === true,
     },
+    draws: [
+      {
+        page: 0,
+        x: 130,
+        y: 142,
+        text: `${ctx.first} ${ctx.last}`.trim(),
+        signature: true,
+      },
+      {
+        page: 0,
+        x: 500,
+        y: 142,
+        text: fmtDate(s(d, "w4SignatureDate")) || ctx.signDate,
+        size: 10,
+      },
+    ],
   };
 }
