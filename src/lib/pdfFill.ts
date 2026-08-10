@@ -164,6 +164,32 @@ export async function fillTemplate(
   return doc;
 }
 
+/** Drops empty trailing pages so signature stamps land on real content. */
+function removeTrailingBlankPages(doc: PDFDocument) {
+  while (doc.getPageCount() > 1) {
+    const idx = doc.getPageCount() - 1;
+    const page = doc.getPage(idx);
+    let size = 0;
+    try {
+      const contents = page.node.Contents();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const anyContents = contents as any;
+      if (!contents) size = 0;
+      else if (typeof anyContents?.getContentsSize === "function")
+        size = anyContents.getContentsSize();
+      else if (typeof anyContents?.contents?.length === "number")
+        size = anyContents.contents.length;
+      else if (typeof anyContents?.size === "function") size = anyContents.size();
+      else size = 999;
+    } catch {
+      size = 999;
+    }
+    const hasAnnots = (page.node.Annots()?.size?.() ?? 0) > 0;
+    if (size > 120 || hasAnnots) break;
+    doc.removePage(idx);
+  }
+}
+
 function applyStamp(
   doc: PDFDocument,
   stamp: Stamp,
