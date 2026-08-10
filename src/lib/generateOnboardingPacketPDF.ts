@@ -469,15 +469,16 @@ export async function generateOnboardingPacketPDF(
     "uniformRadio",
     "uniformIdBadge",
   ];
+  // Top-edge (points from page top) of each printed row
   const uniformRowY = [
-    208, 239, 270, 300, 330, 359, 378, 396, 412, 430, 448, 466, 484, 502, 520,
-    538, 556,
+    207.6, 238.7, 269.8, 300.8, 331.9, 360.1, 381.6, 399.2, 413.9, 432.5, 450.9,
+    469.4, 488.0, 506.5, 525.0, 543.6, 562.1,
   ];
   const uniformDraws = uniformRowKeys
     .map((key, i) => ({
       page: 0,
       x: 100,
-      y: 792 - uniformRowY[i] * 1.056 - 3,
+      y: 792 - uniformRowY[i] - 11,
       text: b(d, key) ? "X" : "",
       size: 9,
     }))
