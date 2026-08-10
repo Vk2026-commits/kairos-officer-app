@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check, RefreshCw, Image } from "lucide-react";
 import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
+import { generateOnboardingPacketPDF } from "@/lib/generateOnboardingPacketPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
 import { generateEmploymentApplicationPDF } from "@/lib/generateEmploymentApplicationPDF";
 import { AvailabilityTable } from "@/components/AvailabilityTable";
@@ -406,9 +407,13 @@ export default function Admin() {
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            <Button variant="default" size="sm" onClick={() => generateApplicationPDF(app)}>
+                            <Button variant="default" size="sm" onClick={() => generateOnboardingPacketPDF(app)}>
                               <Download className="w-4 h-4 mr-2" />
-                              Full Application
+                              Completed Packet
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => generateApplicationPDF(app)}>
+                              <FileText className="w-4 h-4 mr-2" />
+                              Summary
                             </Button>
                             <Button variant="secondary" size="sm" onClick={() => generateW4PDF(app)}>
                               <FileText className="w-4 h-4 mr-2" />
