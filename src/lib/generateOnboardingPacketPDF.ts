@@ -296,7 +296,7 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 158, y: 604, text: signDate, size: 10 },
       ...(appearanceSigned
         ? [
-            { page: 0, x: 74, y: 120, text: fullName, size: 12, script: true },
+            { page: 0, x: 74, y: 120, text: fullName, size: 12, signature: true },
             { page: 0, x: 332, y: 120, text: fullName, size: 10 },
           ]
         : []),
