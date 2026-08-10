@@ -332,13 +332,18 @@ export async function generateOnboardingPacketPDF(
   });
 
   // 16 - Drug abuse policy
-  await add("/forms/16-drug-abuse.pdf", {}, [
-    ackStamp(
-      b(d, "drugAlcoholPolicyAcknowledged")
-        ? "Acknowledged - Drug & Alcohol Policy."
-        : "Not acknowledged."
-    ),
-  ]);
+  const drugPolicySigned = b(d, "drugAlcoholPolicyAcknowledged");
+  await add("/forms/16-drug-abuse.pdf", {
+    draws: [
+      { page: 0, x: 176, y: 632, text: signDate, size: 10 },
+      ...(drugPolicySigned
+        ? [
+            { page: 0, x: 92, y: 55, text: fullName, size: 12, signature: true },
+            { page: 0, x: 340, y: 55, text: fullName, size: 10 },
+          ]
+        : []),
+    ],
+  });
 
   // 17 - Drug-free workplace / testing consent
   await add("/forms/17-drug-free-policy.pdf", {
