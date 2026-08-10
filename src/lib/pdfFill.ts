@@ -175,26 +175,38 @@ function removeTrailingBlankPages(doc: PDFDocument) {
   while (doc.getPageCount() > 1) {
     const idx = doc.getPageCount() - 1;
     const page = doc.getPage(idx);
-    let size = 0;
-    try {
-      const contents = page.node.Contents();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const anyContents = contents as any;
-      if (!contents) size = 0;
-      else if (typeof anyContents?.getContentsSize === "function")
-        size = anyContents.getContentsSize();
-      else if (typeof anyContents?.contents?.length === "number")
-        size = anyContents.contents.length;
-      else if (typeof anyContents?.size === "function") size = anyContents.size();
-      else size = 999;
-    } catch {
-      size = 999;
-    }
-    const hasAnnots = (page.node.Annots()?.size?.() ?? 0) > 0;
-    if (size > 120 || hasAnnots) break;
+    if (!isBlankPage(doc, page)) break;
     doc.removePage(idx);
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function isBlankPage(doc: PDFDocument, page: any): boolean {
+  try {
+    if ((page.node.Annots()?.size?.() ?? 0) > 0) return false;
+    const contents = page.node.Contents();
+    if (!contents) return true;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const streams: any[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyContents = contents as any;
+    if (typeof anyContents.asArray === "function") {
+      for (const ref of anyContents.asArray()) streams.push(doc.context.lookup(ref));
+    } else {
+      streams.push(anyContents);
+    }
+    let bytes = 0;
+    for (const st of streams) {
+      const c = st?.contents;
+      if (c && typeof c.length === "number") bytes += c.length;
+      else return false;
+    }
+    return bytes < 250;
+  } catch {
+    return false;
+  }
+}
+
 
 function applyStamp(
   doc: PDFDocument,
