@@ -490,8 +490,9 @@ export function w4Spec(d: D, ctx: W4Ctx) {
       [`${p1}.f1_10[0]`]: s(d, "w4OtherIncome"),
       [`${p1}.f1_11[0]`]: s(d, "w4Deductions"),
       [`${p1}.f1_12[0]`]: s(d, "w4ExtraWithholding"),
-      [`${p1}.f1_13[0]`]: "Kairos Security",
-      [`${p1}.f1_15[0]`]: fmtDate(s(d, "w4SignatureDate")) || ctx.signDate,
+      [`${p1}.f1_13[0]`]: "Kairos Security LLC",
+      [`${p1}.f1_14[0]`]:
+        fmtDate(s(d, "scheduledStartDate")) || fmtDate(s(d, "scheduleStartDate")),
     },
     checks: {
       [`${p1}.c1_1[0]`]: status === "single",
