@@ -58,11 +58,13 @@ export async function generateOnboardingPacketPDF(
   const ssnDigits = ssn.replace(/\D/g, "");
   const dob = fmtDate(s(d, "dateOfBirth") || (app.date_of_birth ?? ""));
   const signDate = today(app.created_at);
+  // Typed cursive signature adopted by the applicant (falls back to their name)
+  const sigName = s(d, "typedSignature") || fullName;
   const position = s(d, "position");
 
   const ackStamp = (label: string, extra: { label: string; value: string }[] = []): Stamp => ({
     lines: [
-      { label: `${label}  Signature:`, value: fullName, signature: true },
+      { label: `${label}  Signature:`, value: sigName, signature: true },
       ...extra,
       { label: "Printed Name:", value: fullName },
       { label: "Date:", value: signDate },
@@ -153,7 +155,7 @@ export async function generateOnboardingPacketPDF(
       Savings: accountType === "savings",
       "Entire Net Amount": depositType === "full",
     },
-    drawAt: { "Employee Signature": fullName },
+    drawAt: { "Employee Signature": sigName },
     signatureFields: ["Employee Signature"],
     draws: [
       { page: 1, x: 472, y: 346, text: ssnDigits.slice(0, 3), size: 9 },
@@ -188,7 +190,7 @@ export async function generateOnboardingPacketPDF(
       "Address 1_3": s(d, "doctorAddress"),
       Date: signDate,
     },
-    drawAt: { "Employee signature": fullName },
+    drawAt: { "Employee signature": sigName },
     signatureFields: ["Employee signature"],
   });
 
@@ -198,7 +200,7 @@ export async function generateOnboardingPacketPDF(
       "Printed Name": b(d, "handbookAcknowledged") ? fullName : "",
       Date: signDate,
     },
-    drawAt: { "Employee signature": b(d, "handbookAcknowledged") ? fullName : "" },
+    drawAt: { "Employee signature": b(d, "handbookAcknowledged") ? sigName : "" },
     signatureFields: ["Employee signature"],
   });
 
@@ -221,7 +223,7 @@ export async function generateOnboardingPacketPDF(
       "Printed Name": fullName,
       Date: signDate,
     },
-    drawAt: { "Employee signature": fullName },
+    drawAt: { "Employee signature": sigName },
     signatureFields: ["Employee signature"],
   });
 
@@ -232,7 +234,7 @@ export async function generateOnboardingPacketPDF(
       "Print Name": b(d, "confidentialityAcknowledged") ? fullName : "",
       Title: position,
     },
-    drawAt: { Signature: b(d, "confidentialityAcknowledged") ? fullName : "" },
+    drawAt: { Signature: b(d, "confidentialityAcknowledged") ? sigName : "" },
     signatureFields: ["Signature"],
   });
 
@@ -248,7 +250,7 @@ export async function generateOnboardingPacketPDF(
       Date: signDate,
     },
     drawAt: {
-      "Signature1_es_:signer:signature": b(d, "offerAccepted") ? fullName : "",
+      "Signature1_es_:signer:signature": b(d, "offerAccepted") ? sigName : "",
     },
     signatureFields: ["Signature1_es_:signer:signature"],
     checks: { "Check Box5": b(d, "offerAccepted") },
@@ -296,7 +298,7 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 158, y: 604, text: signDate, size: 10 },
       ...(appearanceSigned
         ? [
-            { page: 0, x: 74, y: 120, text: fullName, size: 12, signature: true },
+            { page: 0, x: 74, y: 120, text: sigName, size: 14, signature: true },
             { page: 0, x: 332, y: 120, text: fullName, size: 10 },
           ]
         : []),
@@ -310,7 +312,7 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 170, y: 634, text: signDate, size: 10 },
       ...(attendanceSigned
         ? [
-            { page: 0, x: 102, y: 122, text: fullName, size: 12, signature: true },
+            { page: 0, x: 102, y: 122, text: sigName, size: 14, signature: true },
             { page: 0, x: 318, y: 122, text: fullName, size: 10 },
           ]
         : []),
@@ -324,7 +326,7 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 146, y: 626, text: signDate, size: 10 },
       ...(disciplinarySigned
         ? [
-            { page: 0, x: 74, y: 147, text: fullName, size: 12, signature: true },
+            { page: 0, x: 74, y: 147, text: sigName, size: 14, signature: true },
             { page: 0, x: 336, y: 147, text: fullName, size: 10 },
           ]
         : []),
@@ -338,7 +340,7 @@ export async function generateOnboardingPacketPDF(
       { page: 0, x: 176, y: 632, text: signDate, size: 10 },
       ...(drugPolicySigned
         ? [
-            { page: 0, x: 92, y: 55, text: fullName, size: 12, signature: true },
+            { page: 0, x: 92, y: 55, text: sigName, size: 14, signature: true },
             { page: 0, x: 340, y: 55, text: fullName, size: 10 },
           ]
         : []),
@@ -352,7 +354,7 @@ export async function generateOnboardingPacketPDF(
       "Employee Name": fullName,
       Date: signDate,
     },
-    drawAt: { Text1: b(d, "drugTestConsentAcknowledged") ? fullName : "" },
+    drawAt: { Text1: b(d, "drugTestConsentAcknowledged") ? sigName : "" },
     signatureFields: ["Text1"],
   });
 
@@ -378,7 +380,7 @@ export async function generateOnboardingPacketPDF(
       "NotesExplanations ex School MonFri 700am300pm": s(d, "availabilityNotes"),
       Date: signDate,
     },
-    drawAt: { "Employee Signature": fullName },
+    drawAt: { "Employee Signature": sigName },
     signatureFields: ["Employee Signature"],
   });
 
