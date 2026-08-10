@@ -155,6 +155,8 @@ export async function fillTemplate(
     });
   }
 
+  removeTrailingBlankPages(doc);
+
   for (const stamp of stamps) {
     applyStamp(doc, stamp, helv, script);
   }
