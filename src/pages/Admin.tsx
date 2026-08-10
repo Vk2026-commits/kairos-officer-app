@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lock, Eye, Calendar, Mail, Phone, MapPin, User, Download, FileText, CreditCard, Briefcase, Shield, PhoneCall, Clock, MessageSquare, Copy, Check, RefreshCw, Image } from "lucide-react";
 import { format, startOfDay, startOfWeek } from "date-fns";
 import { generateApplicationPDF } from "@/lib/generateApplicationPDF";
+import { generateOnboardingPacketPDF } from "@/lib/generateOnboardingPacketPDF";
 import { generateW4PDF } from "@/lib/generateW4PDF";
 import { generateEmploymentApplicationPDF } from "@/lib/generateEmploymentApplicationPDF";
 import { AvailabilityTable } from "@/components/AvailabilityTable";
