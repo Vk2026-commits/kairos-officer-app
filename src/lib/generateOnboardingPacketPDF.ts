@@ -205,6 +205,10 @@ export async function generateOnboardingPacketPDF(
   // 07 - Receipt of company property
   await add("/forms/07-receipt-company-property.pdf", {
     text: {
+      Text1: fullName,
+      Text2: fmtDate(s(d, "scheduledStartDate")) || signDate,
+      Text3: s(d, "employeeIdNumber"),
+      Text4: position || "Security",
       "QtyBuilding KeyCard": b(d, "receivedBuildingKey") ? "1" : "",
       "QtyIdentification Badge": b(d, "receivedIdBadge") ? "1" : "",
       "QtyMobile Device Enter service provider and model": b(d, "receivedMobileDevice")
