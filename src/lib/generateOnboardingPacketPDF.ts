@@ -398,16 +398,16 @@ export async function generateOnboardingPacketPDF(
     "/forms/21-social-and-digital-media-code-of-conduct-for-your-organization.pdf",
     {
       draws: [
-        { page: 99, x: 74, y: 554, text: socialAck ? fullName : "", size: 10 },
+        { page: 99, x: 74, y: 558, text: socialAck ? fullName : "", size: 10 },
         {
           page: 99,
           x: 74,
-          y: 512,
+          y: 516,
           text: socialAck ? fullName : "",
           size: 12,
           signature: true,
         },
-        { page: 99, x: 74, y: 470, text: socialAck ? signDate : "", size: 10 },
+        { page: 99, x: 74, y: 474, text: socialAck ? signDate : "", size: 10 },
       ],
     }
   );
