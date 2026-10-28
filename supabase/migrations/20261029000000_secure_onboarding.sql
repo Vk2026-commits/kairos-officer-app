@@ -10,6 +10,7 @@ CREATE TABLE public.onboarding_invitations (
 );
 ALTER TABLE public.onboarding_invitations ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.onboarding_invitations FROM anon, authenticated;
+GRANT ALL ON public.onboarding_invitations TO service_role;
 ALTER TABLE public.applications ADD COLUMN employment_application_id uuid UNIQUE
   REFERENCES public.employment_applications(id);
 DROP POLICY IF EXISTS "Anyone can submit applications" ON public.applications;
