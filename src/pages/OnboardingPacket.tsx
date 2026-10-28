@@ -1,8 +1,31 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Phone, Mail } from "lucide-react";
 import { ApplicationForm } from "@/components/ApplicationForm";
 import kairosLogo from "@/assets/kairos-logo.png";
 
 const OnboardingPacket = () => {
+  const [invitation, setInvitation] = useState<string | null>(null);
+  const [message, setMessage] = useState("Checking your onboarding invitation...");
+  useEffect(() => {
+    let cancelled = false;
+    // A fragment keeps the bearer token out of request URLs and referrer headers.
+    const token = new URLSearchParams(window.location.hash.slice(1)).get("invite");
+    try {
+      localStorage.removeItem("onboarding-packet-draft");
+      localStorage.removeItem("onboarding-packet-step");
+    } catch { /* Storage may be disabled. */ }
+    if (!token) {
+      setMessage("Onboarding is available after the hiring team reviews your employment application and gives you a personal invitation.");
+      return;
+    }
+    supabase.functions.invoke("onboarding", { body: { action: "validate", token } }).then(({ data, error }) => {
+      if (cancelled) return;
+      if (error || !data?.valid) setMessage("This invitation is invalid, expired, or already used. Please contact the hiring team.");
+      else setInvitation(token);
+    }).catch(() => { if (!cancelled) setMessage("Unable to check your invitation. Please try again."); });
+    return () => { cancelled = true; };
+  }, []);
   return (
     <div className="min-h-screen bg-background">
       <header className="bg-background border-b border-border py-4">
@@ -38,7 +61,14 @@ const OnboardingPacket = () => {
 
       <section className="py-8 md:py-12 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <ApplicationForm />
+          {invitation ? <ApplicationForm invitationToken={invitation} onComplete={() => {
+            setInvitation(null);
+            setMessage("Your onboarding packet has been received. The hiring team will follow up with you.");
+            window.history.replaceState(null, "", window.location.pathname);
+          }} /> : <div className="max-w-xl mx-auto text-center space-y-4" role="status">
+            <p>{message}</p>
+            <a className="underline text-primary" href="/employment-application">Employment application</a>
+          </div>}
         </div>
       </section>
 

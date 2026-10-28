@@ -233,7 +233,7 @@ const steps = [
 
 const TOTAL_STEPS = 21;
 
-export function ApplicationForm() {
+export function ApplicationForm({ invitationToken, onComplete }: { invitationToken: string; onComplete: () => void }) {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [driversLicenseFile, setDriversLicenseFile] = useState<File | null>(null);
@@ -405,54 +405,13 @@ export function ApplicationForm() {
     },
   });
 
-  const STORAGE_KEY = "onboarding-packet-draft";
-  const STEP_KEY = "onboarding-packet-step";
-  const [draftRestored, setDraftRestored] = useState(false);
-
-  // Restore saved draft on mount
+  // Financial and identity fields remain in memory, never in browser draft storage.
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      const savedStep = localStorage.getItem(STEP_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        form.reset(parsed);
-        if (savedStep) setCurrentStep(Number(savedStep) || 1);
-        setDraftRestored(true);
-        toast.success("Welcome back!", {
-          description: "We restored your saved progress.",
-        });
-      }
-    } catch (e) {
-      console.warn("Could not restore draft:", e);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+      localStorage.removeItem("onboarding-packet-draft");
+      localStorage.removeItem("onboarding-packet-step");
+    } catch { /* Storage may be disabled. */ }
   }, []);
-
-  // Autosave on any field change (debounced)
-  useEffect(() => {
-    const sub = form.watch((values) => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(values));
-      } catch {}
-    });
-    return () => sub.unsubscribe();
-  }, [form]);
-
-  // Save current step
-  useEffect(() => {
-    try {
-      localStorage.setItem(STEP_KEY, String(currentStep));
-    } catch {}
-  }, [currentStep]);
-
-  const clearDraft = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(STEP_KEY);
-    } catch {}
-  };
-
 
   const onSubmit = async (data: ApplicationFormData) => {
     setIsSubmitting(true);
@@ -512,73 +471,38 @@ export function ApplicationForm() {
         full_form_data: JSON.parse(JSON.stringify(data)),
       };
 
-      // Save to database (generate ID client-side; RLS blocks SELECT on returning row)
-      const applicationId = crypto.randomUUID();
-      const { error: dbError } = await supabase
-        .from('applications')
-        .insert({ ...applicationData, id: applicationId });
-
-      if (dbError) {
-        console.error("Database error:", dbError);
-        throw new Error("Failed to save application");
-      }
-
-      console.log("Application saved to database:", applicationId);
-
-      // Upload documents to storage
-
-      const uploadFile = async (file: File, docType: string) => {
-        const ext = file.name.split('.').pop();
-        const path = `${applicationId}/${docType}.${ext}`;
-        const { error } = await supabase.storage
-          .from('onboarding-documents')
-          .upload(path, file);
-        if (error) console.error(`Failed to upload ${docType}:`, error);
-      };
-
-      if (driversLicenseFile) await uploadFile(driversLicenseFile, 'drivers-license');
-      if (ssnCardFile) await uploadFile(ssnCardFile, 'social-security-card');
-
-      // Send email notification
-      // Send email notification
-      const { error: emailError } = await supabase.functions.invoke('send-application-email', {
-        body: {
-          id: applicationId,
-
-          lastName: data.lastName,
-          email: data.email,
-          phone: data.phone,
-          dateOfBirth: data.dateOfBirth,
-          address: data.address,
-          city: data.city,
-          state: data.state,
-          zipCode: data.zipCode,
-          desiredPosition: data.position,
-          fullFormData: data,
-        },
+      const { data: result, error: submitError } = await supabase.functions.invoke("onboarding", {
+        body: { action: "submit", token: invitationToken, application: applicationData },
       });
+      if (submitError || result?.error || !result?.id) throw new Error("Unable to submit. Check your invitation and the email address on your employment application.");
 
-      if (emailError) {
-        console.error("Email error:", emailError);
-        // Don't throw - application was saved, just email failed
-        toast.warning("Application saved but email notification failed", {
-          description: "We received your application and will contact you soon.",
-        });
+      let uploadFailed = false;
+      const uploadFile = async (file: File, kind: string) => {
+        try {
+          const upload = result.uploads?.[kind];
+          if (!upload) { uploadFailed = true; return; }
+          const { error } = await supabase.storage.from("onboarding-documents")
+            .uploadToSignedUrl(upload.path, upload.token, file, { contentType: file.type });
+          if (error) uploadFailed = true;
+        } catch { uploadFailed = true; }
+      };
+      if (driversLicenseFile) await uploadFile(driversLicenseFile, "drivers-license");
+      if (ssnCardFile) await uploadFile(ssnCardFile, "social-security-card");
+      if (uploadFailed) {
+        toast.warning("Packet saved, but a document upload failed", { description: "Contact the hiring team to provide the missing documents securely. Do not resubmit the packet.", duration: 15000 });
       } else {
-        toast.success("Application submitted successfully!", {
-          description: "We will contact you within 2-3 business days.",
-        });
+        toast.success("Onboarding packet submitted successfully!");
       }
 
       // Reset form after successful submission
       form.reset();
       setCurrentStep(1);
-      clearDraft();
+      onComplete();
       
     } catch (error) {
       console.error("Submission error:", error);
       toast.error("Failed to submit application", {
-        description: "Please try again or contact us directly.",
+        description: error instanceof Error ? error.message : "Please contact the hiring team.",
       });
     } finally {
       setIsSubmitting(false);
@@ -689,16 +613,15 @@ export function ApplicationForm() {
         <div className="mt-2 flex items-center justify-center gap-3 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1">
             <CheckCircle2 className="w-3 h-3 text-accent" />
-            Progress saved automatically on this device
+            For your privacy, progress is kept only while this page is open
           </span>
           <button
             type="button"
             onClick={() => {
-              if (confirm("Clear all saved progress and start over?")) {
-                clearDraft();
+              if (confirm("Clear this form and start over?")) {
                 form.reset();
                 setCurrentStep(1);
-                toast.success("Saved progress cleared");
+                toast.success("Form cleared");
               }
             }}
             className="underline hover:text-foreground transition-colors"
