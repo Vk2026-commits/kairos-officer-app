@@ -38,6 +38,7 @@ export type Database = {
           emergency_contact_name: string | null
           emergency_contact_phone: string | null
           emergency_contact_relationship: string | null
+          employment_application_id: string | null
           first_name: string
           foreign_passport_number: string | null
           full_form_data: Json
@@ -83,6 +84,7 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          employment_application_id?: string | null
           first_name: string
           foreign_passport_number?: string | null
           full_form_data: Json
@@ -128,6 +130,7 @@ export type Database = {
           emergency_contact_name?: string | null
           emergency_contact_phone?: string | null
           emergency_contact_relationship?: string | null
+          employment_application_id?: string | null
           first_name?: string
           foreign_passport_number?: string | null
           full_form_data?: Json
@@ -150,7 +153,15 @@ export type Database = {
           work_authorization_expiration?: string | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "applications_employment_application_id_fkey"
+            columns: ["employment_application_id"]
+            isOneToOne: true
+            referencedRelation: "employment_applications"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       employment_applications: {
         Row: {
@@ -314,6 +325,41 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_invitations: {
+        Row: {
+          created_at: string
+          employment_application_id: string
+          expires_at: string
+          id: string
+          token_hash: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          employment_application_id: string
+          expires_at?: string
+          id?: string
+          token_hash: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          employment_application_id?: string
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "onboarding_invitations_employment_application_id_fkey"
+            columns: ["employment_application_id"]
+            isOneToOne: false
+            referencedRelation: "employment_applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       retell_calls: {
         Row: {
           agent_name: string | null
@@ -427,7 +473,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_invited_onboarding: {
+        Args: { invitation_hash: string; payload: Json }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
