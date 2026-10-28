@@ -1,3 +1,4 @@
+import { BankNumbers } from "@/components/BankNumbers";
 import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -96,60 +97,34 @@ interface RetellCall {
   created_at: string;
 }
 
-function DocumentLinks({ applicationId }: { applicationId: string }) {
+function DocumentLinks({ applicationId, password }: { applicationId: string; password: string }) {
   const [docs, setDocs] = useState<{ name: string; url: string }[]>([]);
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   useEffect(() => {
-    const loadDocs = async () => {
-      const { data, error } = await supabase.storage
-        .from('onboarding-documents')
-        .list(applicationId);
-      
-      if (!error && data && data.length > 0) {
-        const urlPromises = data.map(async (file) => {
-          const { data: urlData } = await supabase.storage
-            .from('onboarding-documents')
-            .createSignedUrl(`${applicationId}/${file.name}`, 3600);
-          return { name: file.name, url: urlData?.signedUrl || '' };
-        });
-        const urls = await Promise.all(urlPromises);
-        setDocs(urls.filter(u => u.url));
-      }
-      setLoading(false);
-    };
-    loadDocs();
-  }, [applicationId]);
-
-  if (!loading && docs.length === 0) return null;
-
-  return (
-    <div className="pt-2 border-t">
-      <div className="flex items-center gap-2 text-sm font-medium mb-2">
-        <Image className="w-4 h-4 text-primary" />
-        Uploaded Documents
-      </div>
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Loading documents...</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {docs.map((doc) => (
-            <a
-              key={doc.name}
-              href={doc.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 p-3 bg-muted/30 rounded-lg hover:bg-muted/50 transition-colors text-sm"
-            >
-              <FileText className="w-4 h-4 text-primary shrink-0" />
-              <span className="font-medium capitalize">{doc.name.replace(/\.[^.]+$/, '').replace(/-/g, ' ')}</span>
-              <Eye className="w-3 h-3 ml-auto text-muted-foreground" />
-            </a>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+    if (!docs.length) return;
+    const timer = window.setTimeout(() => setDocs([]), 55000);
+    return () => window.clearTimeout(timer);
+  }, [docs]);
+  const loadDocs = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("get-applications", {
+        body: { password, action: "documents", applicationId },
+      });
+      if (error || data?.error) throw new Error();
+      setDocs(data.docs || []);
+      if (!data.docs?.length) setError("No documents uploaded.");
+    } catch { setError("Unable to load documents."); }
+    finally { setLoading(false); }
+  };
+  return <div className="pt-2 border-t space-y-2">
+    <Button variant="outline" size="sm" onClick={loadDocs} disabled={loading}>{loading ? "Loading..." : "View uploaded documents"}</Button>
+    {error && <p role="status" className="text-sm">{error}</p>}
+    {docs.map(doc => <a key={doc.name} href={doc.url} target="_blank" rel="noopener noreferrer" className="block underline text-sm">{doc.name}</a>)}
+    {docs.length > 0 && <p className="text-xs text-muted-foreground">Document links expire in one minute. Click above to renew them.</p>}
+  </div>;
 }
 
 type CallFilter = "all" | "today" | "week" | "custom";
@@ -165,6 +140,9 @@ export default function Admin() {
   const [callFilter, setCallFilter] = useState<CallFilter>("all");
   const [customDate, setCustomDate] = useState("");
   const [copiedLink, setCopiedLink] = useState<string | null>(null);
+
+  const [inviteLink, setInviteLink] = useState<{ id: string; url: string } | null>(null);
+  const [busyAction, setBusyAction] = useState(false);
 
   const baseUrl = "https://apply.kairossecurity.com";
 
@@ -282,9 +260,37 @@ export default function Admin() {
     return hasData ? availability : null;
   };
 
-  const handleDownloadEmploymentPDF = (app: EmploymentApplication) => {
-    const formData = app.full_form_data as Record<string, any>;
-    generateEmploymentApplicationPDF({ ...formData, firstName: app.first_name, lastName: app.last_name });
+  const inviteApplicant = async (app: EmploymentApplication) => {
+    if (!window.confirm(`Approve ${app.first_name} ${app.last_name} for onboarding? Only proceed after completing your hiring review. This creates a personal invitation valid for 7 days.`)) return;
+    setBusyAction(true);
+    setError("");
+    setInviteLink(null);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-applications", {
+        body: { password, action: "invite", applicationId: app.id },
+      });
+      if (error || data?.error) throw new Error(data?.error || "Unable to create invitation. Confirm this applicant has an email and has not already completed onboarding.");
+      setInviteLink({ id: app.id, url: `${baseUrl}/onboarding-packet#invite=${data.token}` });
+    } catch (err) { setError(err instanceof Error ? err.message : "Unable to create invitation."); }
+    finally { setBusyAction(false); }
+  };
+
+  const downloadPDF = async (id: string, format: "packet" | "summary" | "w4" | "employment") => {
+    if (!window.confirm("Download a confidential document containing personal information and, where applicable, full banking numbers? Store it securely.")) return;
+    setBusyAction(true);
+    setError("");
+    try {
+      const { data, error } = await supabase.functions.invoke("get-applications", {
+        body: { password, action: "export", applicationId: id, kind: format === "employment" ? "employment" : "onboarding" },
+      });
+      if (error || data?.error || !data?.application) throw new Error("Unable to download the document.");
+      const app = data.application;
+      if (format === "packet") await generateOnboardingPacketPDF(app);
+      if (format === "summary") await generateApplicationPDF(app);
+      if (format === "w4") await generateW4PDF(app);
+      if (format === "employment") await generateEmploymentApplicationPDF({ ...app.full_form_data, firstName: app.first_name, lastName: app.last_name });
+    } catch (err) { setError(err instanceof Error ? err.message : "Download failed."); }
+    finally { setBusyAction(false); }
   };
 
   if (!isAuthenticated) {
@@ -324,27 +330,19 @@ export default function Admin() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => copyLink("/onboarding-packet")}
-              className="gap-2"
-            >
-              {copiedLink === "/onboarding-packet" ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-              {copiedLink === "/onboarding-packet" ? "Copied!" : "Copy Onboarding Link"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
               onClick={() => copyLink("/employment-application")}
               className="gap-2"
             >
               {copiedLink === "/employment-application" ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
               {copiedLink === "/employment-application" ? "Copied!" : "Copy Application Link"}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setIsAuthenticated(false)}>
+            <Button variant="outline" size="sm" onClick={() => { setIsAuthenticated(false); setPassword(""); setApplications([]); setEmploymentApplications([]); setRetellCalls([]); setInviteLink(null); setError(""); }}>
               Logout
             </Button>
           </div>
         </div>
 
+        {error && <p role="alert" className="mb-4 text-destructive">{error}</p>}
         <Tabs defaultValue="onboarding" className="space-y-6">
            <TabsList>
             <TabsTrigger value="onboarding">
@@ -407,15 +405,15 @@ export default function Admin() {
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            <Button variant="default" size="sm" onClick={() => generateOnboardingPacketPDF(app)}>
+                            <Button variant="default" size="sm" disabled={busyAction} onClick={() => downloadPDF(app.id, "packet")}>
                               <Download className="w-4 h-4 mr-2" />
                               Completed Packet
                             </Button>
-                            <Button variant="outline" size="sm" onClick={() => generateApplicationPDF(app)}>
+                            <Button variant="outline" size="sm" disabled={busyAction} onClick={() => downloadPDF(app.id, "summary")}>
                               <FileText className="w-4 h-4 mr-2" />
                               Summary
                             </Button>
-                            <Button variant="secondary" size="sm" onClick={() => generateW4PDF(app)}>
+                            <Button variant="secondary" size="sm" disabled={busyAction} onClick={() => downloadPDF(app.id, "w4")}>
                               <FileText className="w-4 h-4 mr-2" />
                               Form W-4
                             </Button>
@@ -495,18 +493,7 @@ export default function Admin() {
                                   <span className="font-medium">{String(app.full_form_data.bankName)}</span>
                                 </div>
                               )}
-                              {app.full_form_data?.routingNumber && (
-                                <div>
-                                  <span className="text-muted-foreground block text-xs">Routing Number</span>
-                                  <span className="font-mono font-medium">{String(app.full_form_data.routingNumber)}</span>
-                                </div>
-                              )}
-                              {app.full_form_data?.accountNumber && (
-                                <div>
-                                  <span className="text-muted-foreground block text-xs">Account Number</span>
-                                  <span className="font-mono font-medium">{String(app.full_form_data.accountNumber)}</span>
-                                </div>
-                              )}
+                              <BankNumbers applicationId={app.id} password={password} />
                               {app.full_form_data?.accountType && (
                                 <div>
                                   <span className="text-muted-foreground block text-xs">Account Type</span>
@@ -524,7 +511,7 @@ export default function Admin() {
                         )}
 
                         {/* Uploaded Documents */}
-                        <DocumentLinks applicationId={app.id} />
+                        <DocumentLinks applicationId={app.id} password={password} />
                       </div>
                     </CardContent>
                   </Card>
@@ -592,7 +579,16 @@ export default function Admin() {
                             </div>
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            <Button variant="default" size="sm" onClick={() => handleDownloadEmploymentPDF(app)}>
+                            <Button variant="outline" size="sm" disabled={busyAction} onClick={() => inviteApplicant(app)}>Approve for onboarding</Button>
+                            {inviteLink?.id === app.id && <div className="w-full space-y-2">
+                              <label className="text-sm" htmlFor={`invite-${app.id}`}>Personal onboarding link — send only to this applicant. Expires in 7 days.</label>
+                              <Input id={`invite-${app.id}`} readOnly value={inviteLink.url} onFocus={event => event.target.select()} />
+                              <Button variant="outline" size="sm" onClick={async () => {
+                                try { await navigator.clipboard.writeText(inviteLink.url); setCopiedLink(app.id); }
+                                catch { setError("Select and copy the invitation link above."); }
+                              }}>{copiedLink === app.id ? "Copied!" : "Copy invitation"}</Button>
+                            </div>}
+                            <Button variant="default" size="sm" disabled={busyAction} onClick={() => downloadPDF(app.id, "employment")}>
                               <Download className="w-4 h-4 mr-2" />
                               Download PDF
                             </Button>
